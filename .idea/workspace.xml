@@ -4,7 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c693e493-3c04-49ac-8316-706d1fe43317" name="Changes" comment="Implement core functionalities for course tracking. Introduced tab navigation, course addition with customizable review intervals, localStorage persistence, and task planning logic with overdue and upcoming reviews. Enhanced UI/UX with interactive components and TailwindCSS styling." />
+    <list default="true" id="c693e493-3c04-49ac-8316-706d1fe43317" name="Changes" comment="Introduce user profiles with semester tracking. Added new types, onboarding modal, and semester-specific course filters. Enhanced UI with updated headers and profile management.">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/page.tsx" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -45,11 +48,20 @@
       <option name="project" value="LOCAL" />
       <updated>1767480803692</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Introduce user profiles with semester tracking. Added new types, onboarding modal, and semester-specific course filters. Enhanced UI with updated headers and profile management.">
+      <option name="closed" value="true" />
+      <created>1767481366423</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1767481366423</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Implement core functionalities for course tracking. Introduced tab navigation, course addition with customizable review intervals, localStorage persistence, and task planning logic with overdue and upcoming reviews. Enhanced UI/UX with interactive components and TailwindCSS styling." />
-    <option name="LAST_COMMIT_MESSAGE" value="Implement core functionalities for course tracking. Introduced tab navigation, course addition with customizable review intervals, localStorage persistence, and task planning logic with overdue and upcoming reviews. Enhanced UI/UX with interactive components and TailwindCSS styling." />
+    <MESSAGE value="Introduce user profiles with semester tracking. Added new types, onboarding modal, and semester-specific course filters. Enhanced UI with updated headers and profile management." />
+    <option name="LAST_COMMIT_MESSAGE" value="Introduce user profiles with semester tracking. Added new types, onboarding modal, and semester-specific course filters. Enhanced UI with updated headers and profile management." />
   </component>
 </project>

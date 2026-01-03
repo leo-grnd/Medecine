@@ -55,6 +55,28 @@ type Tab = 'planning' | 'all' | 'add';
 const DEFAULT_INTERVALS = [0, 1, 3, 7, 14, 30, 60];
 const AVAILABLE_OPTS = [0, 1, 2, 3, 4, 5, 7, 10, 14, 15, 20, 21, 28, 30, 42, 45, 60];
 
+// Liste des universités pour l'autocomplétion
+const UNIVERSITY_SUGGESTIONS = [
+    // Île-de-France
+    "Université Paris Cité",
+    "Sorbonne Université",
+    "Université Paris-Saclay",
+    "Université Paris-Est Créteil",
+    "UFR Simone Veil - UVSQ",
+    // Sud-Est
+    "Aix-Marseille Université",
+    "Université Claude Bernard Lyon 1",
+    "Université de Montpellier",
+    "Université Grenoble Alpes",
+    "Université Côte d’Azur (Nice)",
+    // Autres régions majeures
+    "Université de Lille",
+    "Université de Bordeaux",
+    "Université de Toulouse",
+    "Université de Strasbourg",
+    "Université de Rennes 1"
+];
+
 export default function Home() {
     // --- ETATS ---
     const [courses, setCourses] = useState<Course[]>([]);
@@ -363,11 +385,17 @@ export default function Home() {
                                 <input
                                     type="text"
                                     required
-                                    placeholder="Ex: Sorbonne Université, Lyon Sud..."
+                                    list="university-suggestions"
+                                    placeholder="Commencez à taper..."
                                     className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-indigo-500 outline-none"
                                     value={tempProfile.university}
                                     onChange={(e) => setTempProfile({...tempProfile, university: e.target.value})}
                                 />
+                                <datalist id="university-suggestions">
+                                    {UNIVERSITY_SUGGESTIONS.map((uni) => (
+                                        <option key={uni} value={uni} />
+                                    ))}
+                                </datalist>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
