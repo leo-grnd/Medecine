@@ -13,7 +13,11 @@ import {
     ChevronDown,
     ChevronUp,
     Settings,
-    RefreshCcw
+    RefreshCcw,
+    User,
+    GraduationCap,
+    School,
+    LayoutDashboard
 } from 'lucide-react';
 
 // --- TYPES ---
@@ -24,6 +28,17 @@ type Review = {
     interval: number;
 };
 
+type Semester = 'S1' | 'S2';
+type CourseType = 'PASS' | 'LAS' | 'PACES' | 'Autre';
+
+type UserProfile = {
+    firstName: string;
+    lastName: string;
+    university: string;
+    courseType: CourseType;
+    currentSemester: Semester;
+};
+
 type Course = {
     id: string;
     name: string;
@@ -31,25 +46,35 @@ type Course = {
     startDate: string;
     reviews: Review[];
     progress: number;
+    semester: Semester; // Nouveau champ
 };
 
 type Tab = 'planning' | 'all' | 'add';
 
 // Configuration par défaut (Méthode classique)
 const DEFAULT_INTERVALS = [0, 1, 3, 7, 14, 30, 60];
-
-// Liste des intervalles sélectionnables pour le mode avancé
 const AVAILABLE_OPTS = [0, 1, 2, 3, 4, 5, 7, 10, 14, 15, 20, 21, 28, 30, 42, 45, 60];
 
 export default function Home() {
     // --- ETATS ---
     const [courses, setCourses] = useState<Course[]>([]);
+    const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
     const [isLoaded, setIsLoaded] = useState(false);
+    const [showProfileModal, setShowProfileModal] = useState(false);
 
-    // Formulaire
+    // Formulaire d'ajout
     const [newCourseName, setNewCourseName] = useState('');
     const [newCourseSubject, setNewCourseSubject] = useState('');
     const [learningDate, setLearningDate] = useState('');
+
+    // Formulaire profil (temporaire pour l'édition)
+    const [tempProfile, setTempProfile] = useState<UserProfile>({
+        firstName: '',
+        lastName: '',
+        university: '',
+        courseType: 'PASS',
+        currentSemester: 'S1'
+    });
 
     // Options avancées (Custom J)
     const [showAdvanced, setShowAdvanced] = useState(false);
@@ -61,62 +86,78 @@ export default function Home() {
     // Initialisation
     useEffect(() => {
         setLearningDate(new Date().toISOString().split('T')[0]);
-        const saved = localStorage.getItem('jtrack_courses');
-        if (saved) {
+
+        // Charger les cours
+        const savedCourses = localStorage.getItem('jtrack_courses');
+        if (savedCourses) {
             try {
-                setCourses(JSON.parse(saved));
+                setCourses(JSON.parse(savedCourses));
             } catch (e) {
-                console.error("Erreur de lecture des données", e);
+                console.error("Erreur lecture cours", e);
             }
         }
+
+        // Charger le profil
+        const savedProfile = localStorage.getItem('jtrack_user_profile');
+        if (savedProfile) {
+            try {
+                const parsed = JSON.parse(savedProfile);
+                setUserProfile(parsed);
+                setTempProfile(parsed);
+            } catch (e) { console.error(e); }
+        } else {
+            // Si pas de profil, on ouvre la modale
+            setShowProfileModal(true);
+        }
+
         setIsLoaded(true);
     }, []);
 
-    // Sauvegarde
+    // Sauvegarde automatique des cours
     useEffect(() => {
         if (isLoaded) {
             localStorage.setItem('jtrack_courses', JSON.stringify(courses));
         }
     }, [courses, isLoaded]);
 
-    // --- UTILITAIRES ---
+    // Sauvegarde automatique du profil
+    useEffect(() => {
+        if (isLoaded && userProfile) {
+            localStorage.setItem('jtrack_user_profile', JSON.stringify(userProfile));
+        }
+    }, [userProfile, isLoaded]);
+
+    // --- ACTIONS PROFIL ---
+
+    const handleSaveProfile = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!tempProfile.firstName.trim() || !tempProfile.university.trim()) return;
+        setUserProfile(tempProfile);
+        setShowProfileModal(false);
+    };
+
+    const switchSemester = () => {
+        if (!userProfile) return;
+        const newSem = userProfile.currentSemester === 'S1' ? 'S2' : 'S1';
+        setUserProfile({ ...userProfile, currentSemester: newSem });
+    };
+
+    // --- ACTIONS COURS ---
+
     const addDays = (dateString: string, days: number): Date => {
         const result = new Date(dateString);
         result.setDate(result.getDate() + days);
         return result;
     };
 
-    const getDayName = (dateObj: Date) => {
-        return dateObj.toLocaleDateString('fr-FR', { weekday: 'long' });
-    };
-
-    const isSameDay = (d1: Date, d2: Date) => {
-        return d1.getDate() === d2.getDate() &&
-            d1.getMonth() === d2.getMonth() &&
-            d1.getFullYear() === d2.getFullYear();
-    };
-
-    // --- ACTIONS ---
-
-    const toggleCustomInterval = (val: number) => {
-        setCustomIntervals(prev => {
-            if (prev.includes(val)) {
-                return prev.filter(i => i !== val);
-            } else {
-                return [...prev, val].sort((a, b) => a - b);
-            }
-        });
-    };
-
     const handleAddCourse = (e: React.FormEvent) => {
         e.preventDefault();
         if (!newCourseName.trim() || !newCourseSubject.trim()) return;
 
-        // Choix des intervalles : soit custom si le menu est ouvert, soit défaut
         const intervalsToUse = showAdvanced ? customIntervals : DEFAULT_INTERVALS;
 
         if (intervalsToUse.length === 0) {
-            alert("Veuillez sélectionner au moins un intervalle (ex: J0).");
+            alert("Sélectionnez au moins un intervalle.");
             return;
         }
 
@@ -133,17 +174,13 @@ export default function Home() {
             subject: newCourseSubject,
             startDate: learningDate,
             reviews: reviews,
-            progress: 0
+            progress: 0,
+            semester: userProfile ? userProfile.currentSemester : 'S1' // Assigne au semestre actuel
         };
 
         setCourses([newCourse, ...courses]);
-
-        // Reset form
         setNewCourseName('');
         setNewCourseSubject('');
-        // On ne reset pas forcément la date pour permettre l'enchaînement
-        // On peut refermer le menu avancé ou le laisser ouvert selon la préférence UX.
-        // Ici je le laisse tel quel pour enchainer des configs similaires.
         setActiveTab('planning');
     };
 
@@ -163,18 +200,34 @@ export default function Home() {
     };
 
     const deleteCourse = (id: string) => {
-        if (window.confirm("Voulez-vous vraiment supprimer ce cours et tout son historique ?")) {
+        if (window.confirm("Supprimer ce cours définitivement ?")) {
             setCourses(courses.filter(c => c.id !== id));
         }
     };
 
-    // --- LOGIQUE PLANNING ---
+    const toggleCustomInterval = (val: number) => {
+        setCustomIntervals(prev => prev.includes(val) ? prev.filter(i => i !== val) : [...prev, val].sort((a, b) => a - b));
+    };
+
+    // --- FILTRES & HELPERS ---
+
+    const getDayName = (dateObj: Date) => dateObj.toLocaleDateString('fr-FR', { weekday: 'long' });
+    const isSameDay = (d1: Date, d2: Date) => d1.toDateString() === d2.toDateString();
+
+    // Filtrer les cours selon le semestre actif (si profil existe)
+    const currentSemesterCourses = courses.filter(c => {
+        if (!userProfile) return true;
+        // Rétrocompatibilité : si un cours n'a pas de semestre (vieux cours), on l'affiche tout le temps ou on le considère S1.
+        // Ici on l'affiche si c.semester est undefined OU s'il matche.
+        return !c.semester || c.semester === userProfile.currentSemester;
+    });
+
     const getOverdueTasks = () => {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
+        const tasks: any[] = [];
 
-        const tasks: (Review & { courseName: string; courseSubject: string; courseId: string })[] = [];
-        courses.forEach(course => {
+        currentSemesterCourses.forEach(course => {
             course.reviews.forEach(review => {
                 const rDate = new Date(review.date);
                 rDate.setHours(0,0,0,0);
@@ -187,8 +240,8 @@ export default function Home() {
     };
 
     const getTasksForDate = (targetDate: Date) => {
-        const tasks: (Review & { courseName: string; courseSubject: string; courseId: string })[] = [];
-        courses.forEach(course => {
+        const tasks: any[] = [];
+        currentSemesterCourses.forEach(course => {
             course.reviews.forEach(review => {
                 const rDate = new Date(review.date);
                 if (isSameDay(rDate, targetDate)) {
@@ -213,29 +266,167 @@ export default function Home() {
     const overdueTasks = getOverdueTasks();
     const next7Days = generateNext7Days();
 
-    // Si pas encore chargé
+    // --- RENDER ---
     if (!isLoaded) return <div className="min-h-screen bg-slate-50 flex items-center justify-center text-slate-400">Chargement...</div>;
 
     return (
         <div className="min-h-screen bg-slate-50 text-slate-800 font-sans selection:bg-indigo-100 pb-24">
 
-            {/* Header */}
-            <header className="bg-white border-b border-slate-200 sticky top-0 z-20 shadow-sm/50 backdrop-blur-md bg-white/80">
+            {/* --- HEADER --- */}
+            <header className="bg-white border-b border-slate-200 sticky top-0 z-20 shadow-sm/50 backdrop-blur-md bg-white/90">
                 <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
+
+                    {/* Logo & Semestre */}
+                    <div className="flex items-center gap-3">
                         <div className="bg-indigo-600 p-2 rounded-lg shadow-sm">
                             <Activity className="text-white w-5 h-5" />
                         </div>
-                        <span className="font-bold text-xl tracking-tight text-indigo-900 hidden sm:inline">J-Master<span className="text-indigo-500">.Med</span></span>
-                        <span className="font-bold text-xl tracking-tight text-indigo-900 sm:hidden">J-M<span className="text-indigo-500">.Med</span></span>
+                        <div className="flex flex-col">
+              <span className="font-bold text-lg leading-none text-indigo-900">
+                J-Master
+                <span className="text-indigo-500 text-sm ml-0.5">.Med</span>
+              </span>
+                            {userProfile && (
+                                <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">
+                  {userProfile.courseType} • {userProfile.university}
+                </span>
+                            )}
+                        </div>
                     </div>
-                    <div className="text-sm font-medium text-slate-500 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
-                        {courses.length} Cours
+
+                    {/* Action Droite: Switch S1/S2 + Avatar */}
+                    <div className="flex items-center gap-3">
+                        {/* Switcher S1/S2 (Uniquement si PASS/LAS) */}
+                        {userProfile && (userProfile.courseType === 'PASS' || userProfile.courseType === 'LAS') && (
+                            <button
+                                onClick={switchSemester}
+                                className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 rounded-full border border-slate-200 transition-all group"
+                            >
+                                <span className={`text-xs font-bold ${userProfile.currentSemester === 'S1' ? 'text-indigo-600' : 'text-slate-400'}`}>S1</span>
+                                <div className={`w-8 h-4 rounded-full p-0.5 transition-colors ${userProfile.currentSemester === 'S2' ? 'bg-indigo-500' : 'bg-slate-300'}`}>
+                                    <div className={`w-3 h-3 bg-white rounded-full shadow-sm transition-transform ${userProfile.currentSemester === 'S2' ? 'translate-x-4' : ''}`} />
+                                </div>
+                                <span className={`text-xs font-bold ${userProfile.currentSemester === 'S2' ? 'text-indigo-600' : 'text-slate-400'}`}>S2</span>
+                            </button>
+                        )}
+
+                        <button
+                            onClick={() => setShowProfileModal(true)}
+                            className="w-9 h-9 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+                        >
+                            <User className="w-5 h-5" />
+                        </button>
                     </div>
                 </div>
             </header>
 
+            {/* --- MODALE PROFIL (Onboarding / Edit) --- */}
+            {showProfileModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fade-in">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-slide-up">
+                        <div className="bg-indigo-600 p-6 text-white text-center">
+                            <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3 backdrop-blur-sm">
+                                <GraduationCap className="w-8 h-8 text-white" />
+                            </div>
+                            <h2 className="text-2xl font-bold">Mon Profil Étudiant</h2>
+                            <p className="text-indigo-100 text-sm mt-1">Configurez votre espace de travail</p>
+                        </div>
+
+                        <form onSubmit={handleSaveProfile} className="p-6 space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Prénom</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-indigo-500 outline-none"
+                                        value={tempProfile.firstName}
+                                        onChange={(e) => setTempProfile({...tempProfile, firstName: e.target.value})}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Nom</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-indigo-500 outline-none"
+                                        value={tempProfile.lastName}
+                                        onChange={(e) => setTempProfile({...tempProfile, lastName: e.target.value})}
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1 flex items-center gap-1">
+                                    <School className="w-3 h-3" /> Université
+                                </label>
+                                <input
+                                    type="text"
+                                    required
+                                    placeholder="Ex: Sorbonne Université, Lyon Sud..."
+                                    className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-indigo-500 outline-none"
+                                    value={tempProfile.university}
+                                    onChange={(e) => setTempProfile({...tempProfile, university: e.target.value})}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Cursus</label>
+                                    <select
+                                        className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-indigo-500 outline-none bg-white"
+                                        value={tempProfile.courseType}
+                                        onChange={(e) => setTempProfile({...tempProfile, courseType: e.target.value as CourseType})}
+                                    >
+                                        <option value="PASS">PASS</option>
+                                        <option value="LAS">LAS</option>
+                                        <option value="PACES">PACES</option>
+                                        <option value="Autre">Autre</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Semestre Actuel</label>
+                                    <div className="flex gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => setTempProfile({...tempProfile, currentSemester: 'S1'})}
+                                            className={`flex-1 py-2 rounded-lg text-sm font-bold border transition-all ${tempProfile.currentSemester === 'S1' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-400 border-slate-200'}`}
+                                        >
+                                            S1
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setTempProfile({...tempProfile, currentSemester: 'S2'})}
+                                            className={`flex-1 py-2 rounded-lg text-sm font-bold border transition-all ${tempProfile.currentSemester === 'S2' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-400 border-slate-200'}`}
+                                        >
+                                            S2
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl mt-4 transition-all active:scale-95">
+                                Valider mon profil
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+
             <main className="max-w-7xl mx-auto px-4 py-6">
+
+                {/* Bonjour User */}
+                {userProfile && !showProfileModal && (
+                    <div className="mb-6 animate-fade-in">
+                        <h1 className="text-2xl font-bold text-slate-800">
+                            Bonjour, {userProfile.firstName} 👋
+                        </h1>
+                        <p className="text-slate-500 text-sm">
+                            Voici votre programme pour le <span className="font-semibold text-indigo-600">{userProfile.currentSemester}</span>.
+                        </p>
+                    </div>
+                )}
 
                 {/* Navigation Tabs */}
                 <div className="flex gap-2 mb-8 bg-white p-1.5 rounded-2xl shadow-sm border border-slate-200 max-w-md mx-auto">
@@ -267,7 +458,7 @@ export default function Home() {
                     <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 animate-fade-in max-w-xl mx-auto">
                         <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2 pb-4 border-b border-slate-100">
                             <Plus className="w-5 h-5 text-indigo-600" />
-                            Nouveau cours
+                            Nouveau cours <span className="text-xs font-normal text-slate-400 bg-slate-100 px-2 py-1 rounded ml-auto">Pour {userProfile?.currentSemester}</span>
                         </h2>
                         <form onSubmit={handleAddCourse} className="space-y-5">
                             <div>
@@ -346,9 +537,6 @@ export default function Home() {
                                                 )
                                             })}
                                         </div>
-                                        <p className="text-[10px] text-slate-400 mt-2 italic">
-                                            Sélectionnez les jours où vous souhaitez réviser ce cours.
-                                        </p>
                                     </div>
                                 )}
                             </div>
@@ -369,7 +557,7 @@ export default function Home() {
                 {activeTab === 'planning' && (
                     <div className="space-y-6 animate-fade-in">
 
-                        {/* 1. Section Retard (En haut, pleine largeur) */}
+                        {/* 1. Section Retard */}
                         {overdueTasks.length > 0 && (
                             <div className="bg-rose-50 border border-rose-100 rounded-2xl overflow-hidden shadow-sm max-w-4xl mx-auto">
                                 <button
@@ -407,7 +595,7 @@ export default function Home() {
                             </div>
                         )}
 
-                        {/* 2. Timeline des 7 prochains jours (SCROLL HORIZONTAL) */}
+                        {/* 2. Timeline Horizontal */}
                         <div className="flex gap-4 overflow-x-auto pb-8 -mx-4 px-4 sm:mx-0 sm:px-0 snap-x snap-mandatory scrollbar-hide">
                             {next7Days.map((date, index) => {
                                 const dayTasks = getTasksForDate(date);
@@ -448,13 +636,12 @@ export default function Home() {
                                             )}
                                         </div>
 
-                                        {/* Liste des tâches (Scrollable verticalement dans la colonne) */}
+                                        {/* Liste des tâches */}
                                         <div className="p-3 space-y-3 flex-1 overflow-y-auto custom-scrollbar">
                                             {dayTasks.length === 0 ? (
                                                 <div className="h-full flex flex-col items-center justify-center text-slate-300 pb-10">
                                                     <Clock className="w-10 h-10 mb-3 opacity-20" />
                                                     <p className="text-sm font-medium">Rien de prévu</p>
-                                                    <p className="text-xs opacity-70">Profitez-en !</p>
                                                 </div>
                                             ) : (
                                                 dayTasks.map((task) => (
@@ -496,7 +683,6 @@ export default function Home() {
                                                             </button>
                                                         </div>
 
-                                                        {/* Petite barre de progression visuelle pour le style */}
                                                         {!task.done && (
                                                             <div className="absolute bottom-0 left-0 h-0.5 bg-indigo-500/20 w-full"></div>
                                                         )}
@@ -507,14 +693,7 @@ export default function Home() {
                                     </div>
                                 );
                             })}
-
-                            {/* Carte "Voir plus" en fin de scroll */}
-                            <div className="min-w-[100px] flex items-center justify-center text-slate-300 flex-col gap-2 opacity-50">
-                                <CalendarDays className="w-8 h-8" />
-                                <span className="text-xs font-medium text-center">Planning<br/>infini</span>
-                            </div>
                         </div>
-
                     </div>
                 )}
 
@@ -522,22 +701,22 @@ export default function Home() {
                 {activeTab === 'all' && (
                     <div className="space-y-4 animate-fade-in max-w-4xl mx-auto">
                         <div className="flex items-center justify-between mb-4 px-1">
-                            <h2 className="font-bold text-slate-800 text-lg">Répertoire</h2>
+                            <h2 className="font-bold text-slate-800 text-lg">Répertoire ({userProfile?.currentSemester})</h2>
                             <div className="text-xs font-medium text-slate-500 bg-white px-2 py-1 rounded-md border border-slate-200">
-                                Total : {courses.length}
+                                Total : {currentSemesterCourses.length}
                             </div>
                         </div>
 
-                        {courses.length === 0 && (
+                        {currentSemesterCourses.length === 0 && (
                             <div className="text-center py-16 bg-white rounded-2xl border border-dashed border-slate-200">
-                                <p className="text-slate-400 mb-4">Votre répertoire est vide.</p>
+                                <p className="text-slate-400 mb-4">Aucun cours pour le {userProfile?.currentSemester}.</p>
                                 <button onClick={() => setActiveTab('add')} className="text-indigo-600 font-bold hover:underline">
-                                    Ajouter un premier cours
+                                    Ajouter un cours
                                 </button>
                             </div>
                         )}
 
-                        {courses.map((course) => (
+                        {currentSemesterCourses.map((course) => (
                             <div key={course.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
                                 <div className="p-5 flex justify-between items-start">
                                     <div>
@@ -546,7 +725,6 @@ export default function Home() {
                     </span>
                                         <h3 className="font-bold text-slate-800 text-lg leading-tight">{course.name}</h3>
 
-                                        {/* Progress Bar */}
                                         <div className="flex items-center gap-3 mt-4">
                                             <div className="w-full max-w-[140px] h-2 bg-slate-100 rounded-full overflow-hidden">
                                                 <div
@@ -565,13 +743,10 @@ export default function Home() {
                                     </button>
                                 </div>
 
-                                {/* Mini Grille Visuelle */}
                                 <div className="grid grid-cols-7 border-t border-slate-100">
                                     {course.reviews.map((review) => {
                                         const rDate = new Date(review.date);
                                         const isPast = rDate < new Date() && !isSameDay(rDate, new Date());
-
-                                        // Couleur de fond de la cellule
                                         let bgClass = "bg-white";
                                         if (review.done) bgClass = "bg-emerald-50/50";
                                         else if (isPast) bgClass = "bg-rose-50/50";
@@ -580,12 +755,8 @@ export default function Home() {
                                             <div
                                                 key={review.jKey}
                                                 onClick={() => toggleReview(course.id, review.jKey)}
-                                                className={`
-                          h-12 flex items-center justify-center border-r border-slate-100 last:border-r-0 cursor-pointer transition-colors relative group
-                          ${bgClass} hover:bg-slate-100
-                        `}
+                                                className={`h-12 flex items-center justify-center border-r border-slate-100 last:border-r-0 cursor-pointer transition-colors relative group ${bgClass} hover:bg-slate-100`}
                                             >
-                                                {/* Tooltip date */}
                                                 <div className="hidden group-hover:block absolute bottom-full mb-1 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap z-10">
                                                     {rDate.toLocaleDateString('fr-FR', {day: '2-digit', month: '2-digit'})}
                                                 </div>
@@ -608,7 +779,6 @@ export default function Home() {
 
             </main>
 
-            {/* Floating Action Button (Mobile) */}
             {activeTab !== 'add' && (
                 <button
                     onClick={() => setActiveTab('add')}
