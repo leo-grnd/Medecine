@@ -50,15 +50,17 @@ const THEME_NAMES: Record<string, string> = {
 };
 
 // --- CONSTANTES WALLPAPERS ---
-// Note: Pour utiliser vos propres images locales, placez-les dans le dossier public/wallpapers/
-// et remplacez les URLs ci-dessous par '/wallpapers/mon-image.jpg'
+// INSTRUCTIONS POUR IMAGES LOCALES :
+// 1. Placez vos images dans le dossier 'public/wallpapers/' de votre projet.
+// 2. Ajoutez une ligne ci-dessous comme l'exemple 'Mon Image Locale'.
+// 3. L'URL doit commencer par '/wallpapers/'.
 const WALLPAPERS = [
     { id: 'none', name: 'Neutre', url: '' },
-    { id: 'medical', name: 'Médical', url: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&q=80&w=2560&ixlib=rb-4.0.3' },
-    { id: 'nature', name: 'Nature', url: 'https://images.unsplash.com/photo-1497436072909-60f360e1d4b0?auto=format&fit=crop&q=80&w=2560&ixlib=rb-4.0.3' },
+
+    // --- Exemple si vous avez une image "foret.jpg" dans public/wallpapers/ ---
+    // { id: 'local1', name: 'Forêt', url: '/wallpapers/foret.jpg' },
     { id: 'abstract', name: 'Abstrait', url: 'https://images.unsplash.com/photo-1557682250-33bd709cbe85?auto=format&fit=crop&q=80&w=2560&ixlib=rb-4.0.3' },
     { id: 'geometric', name: 'Géométrique', url: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&q=80&w=2560&ixlib=rb-4.0.3' },
-    { id: 'clouds', name: 'Nuages', url: 'https://images.unsplash.com/photo-1499346030926-9a72daac6ea6?auto=format&fit=crop&q=80&w=2560&ixlib=rb-4.0.3' },
 ];
 
 // --- TYPES ---
@@ -79,7 +81,7 @@ type UserProfile = {
     courseType: CourseType;
     currentSemester: Semester;
     theme?: string;
-    wallpaper?: string; // Nouveau champ pour l'URL du fond d'écran
+    wallpaper?: string;
 };
 
 type Course = {
@@ -161,7 +163,7 @@ export default function Home() {
     const activeTheme = activeTab === 'profile' ? tempProfile.theme || 'indigo' : userProfile?.theme || 'indigo';
     const themeColors = THEMES[activeTheme] || THEMES['indigo'];
 
-    // Gestion du fond d'écran : Priorité à la prévisualisation (tempProfile) si on est dans l'onglet profil
+    // Gestion du fond d'écran
     const activeWallpaperUrl = activeTab === 'profile'
         ? (tempProfile.wallpaper || '')
         : (userProfile?.wallpaper || '');
@@ -178,7 +180,7 @@ export default function Home() {
         backgroundImage: activeWallpaperUrl ? `url(${activeWallpaperUrl})` : 'none',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        backgroundAttachment: 'fixed', // Effet parallaxe simple
+        backgroundAttachment: 'fixed',
     } as React.CSSProperties;
 
     // Fonction pour obtenir une couleur unique par cours
@@ -528,7 +530,6 @@ export default function Home() {
                                 <input type="text" required className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-[var(--theme-500)] outline-none" value={tempProfile.lastName} onChange={(e) => setTempProfile({...tempProfile, lastName: e.target.value})} />
                             </div>
                         </div>
-                        {/* ... Reste du formulaire simplifié ... */}
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Cursus</label>
@@ -557,7 +558,7 @@ export default function Home() {
     return (
         <div className="h-screen w-screen overflow-hidden bg-slate-50 text-slate-800 font-sans selection:bg-[var(--theme-100)] relative flex flex-col" style={dynamicStyle}>
 
-            {/* Overlay pour la lisibilité si un fond d'écran est actif */}
+            {/* Overlay pour la lisibilité */}
             {activeWallpaperUrl && <div className="absolute inset-0 bg-white/80 z-0 pointer-events-none backdrop-blur-[2px]"></div>}
 
             {/* HEADER */}
@@ -619,7 +620,7 @@ export default function Home() {
                     </div>
                 )}
 
-                {/* --- VUE: PROFIL (AVEC THEMES & WALLPAPERS) --- */}
+                {/* --- VUE: PROFIL --- */}
                 {activeTab === 'profile' && (
                     <div className="max-w-2xl mx-auto animate-slide-up-fade">
                         <button
@@ -722,6 +723,7 @@ export default function Home() {
                                     </div>
                                 </div>
 
+                                {/* ... (Reste du formulaire Profil) ... */}
                                 <div>
                                     <label className="block text-sm font-bold text-slate-600 mb-2 flex items-center gap-2"><School className="w-4 h-4" /> Université</label>
                                     <input type="text" required list="university-suggestions" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[var(--theme-500)] outline-none transition-all focus:ring-2 focus:ring-[var(--theme-100)]" value={tempProfile.university} onChange={(e) => setTempProfile({...tempProfile, university: e.target.value})} />
