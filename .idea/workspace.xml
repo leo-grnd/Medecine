@@ -4,8 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c693e493-3c04-49ac-8316-706d1fe43317" name="Changes" comment="Update branding: rename `J-Master.Med` to `Med&amp;J` in UI components.">
+    <list default="true" id="c693e493-3c04-49ac-8316-706d1fe43317" name="Changes" comment="Enhance layout styling and components: adjust max-width for responsive design, improve sticky headers with backdrop blur, refine timeline layout with grid for larger screens, and optimize &quot;Today&quot; task styling.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/globals.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/globals.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/app/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/page.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -111,7 +112,7 @@
       <workItem from="1767526143981" duration="2636000" />
       <workItem from="1767529094402" duration="24000" />
       <workItem from="1767529126353" duration="1437000" />
-      <workItem from="1767535044303" duration="1077000" />
+      <workItem from="1767535044303" duration="2040000" />
     </task>
     <task id="LOCAL-00004" summary="Integrate Firebase for authentication and Firestore database. Added user authentication with Google, profile management syncing with Firestore, and real-time course updates. Enhanced UX with loading states and error handling.">
       <option name="closed" value="true" />
@@ -145,7 +146,23 @@
       <option name="project" value="LOCAL" />
       <updated>1767530540059</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="Add date navigation and dynamic week labels for the planning view. Enhanced timeline logic with utility functions for week calculations and improved handling of &quot;Today&quot; and &quot;Tomorrow&quot; labels. Introduced navigation controls for previous/next week and reset to the current week.">
+      <option name="closed" value="true" />
+      <created>1767536941252</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1767536941252</updated>
+    </task>
+    <task id="LOCAL-00009" summary="Enhance layout styling and components: adjust max-width for responsive design, improve sticky headers with backdrop blur, refine timeline layout with grid for larger screens, and optimize &quot;Today&quot; task styling.">
+      <option name="closed" value="true" />
+      <created>1767537291015</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1767537291015</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -173,6 +190,8 @@
     <MESSAGE value="Configure Firebase hosting with static export. Updated `.gitignore`, added Firebase configuration files (`firebase.json`, `.firebaserc`), and static `404.html` and `index.html` templates. Adjusted `next.config.ts` for static build compatibility." />
     <MESSAGE value="Update `.gitignore` to exclude `forme.txt` and modify IDE workspace configuration" />
     <MESSAGE value="Update branding: rename `J-Master.Med` to `Med&amp;J` in UI components." />
-    <option name="LAST_COMMIT_MESSAGE" value="Update branding: rename `J-Master.Med` to `Med&amp;J` in UI components." />
+    <MESSAGE value="Add date navigation and dynamic week labels for the planning view. Enhanced timeline logic with utility functions for week calculations and improved handling of &quot;Today&quot; and &quot;Tomorrow&quot; labels. Introduced navigation controls for previous/next week and reset to the current week." />
+    <MESSAGE value="Enhance layout styling and components: adjust max-width for responsive design, improve sticky headers with backdrop blur, refine timeline layout with grid for larger screens, and optimize &quot;Today&quot; task styling." />
+    <option name="LAST_COMMIT_MESSAGE" value="Enhance layout styling and components: adjust max-width for responsive design, improve sticky headers with backdrop blur, refine timeline layout with grid for larger screens, and optimize &quot;Today&quot; task styling." />
   </component>
 </project>

@@ -5,7 +5,7 @@ import {
     CheckCircle2, Plus, Trash2, BookOpen, Activity, AlertCircle,
     CalendarDays, Clock, ChevronDown, ChevronUp, Settings, RefreshCcw,
     User, GraduationCap, School, LogOut, Loader2, Key,
-    ChevronLeft, ChevronRight, Calendar
+    ChevronLeft, ChevronRight, Calendar, AlertTriangle, X
 } from 'lucide-react';
 
 // Import Firebase
@@ -73,7 +73,6 @@ const UNIVERSITY_SUGGESTIONS = [
 
 // --- UTILITAIRES DATES ---
 
-// Obtenir le numéro de semaine (ISO 8601)
 const getWeekNumber = (d: Date) => {
     const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
     const dayNum = date.getUTCDay() || 7;
@@ -82,11 +81,10 @@ const getWeekNumber = (d: Date) => {
     return Math.ceil((((date.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
 };
 
-// Obtenir le Lundi de la semaine pour une date donnée
 const getStartOfWeek = (d: Date) => {
     const date = new Date(d);
-    const day = date.getDay(); // 0 (Dimanche) à 6 (Samedi)
-    const diff = date.getDate() - day + (day === 0 ? -6 : 1); // Ajuster pour que Lundi soit le 1er jour
+    const day = date.getDay();
+    const diff = date.getDate() - day + (day === 0 ? -6 : 1);
     const monday = new Date(date.setDate(diff));
     monday.setHours(0, 0, 0, 0);
     return monday;
@@ -96,28 +94,27 @@ export default function Home() {
     // --- ETATS ---
     const [user, setUser] = useState<FirebaseUser | null>(null);
 
-    // États de chargement distincts pour une UX fluide
-    const [loadingAuth, setLoadingAuth] = useState(true);      // Vérif si connecté
-    const [loadingProfile, setLoadingProfile] = useState(true); // Vérif si profil existe
+    const [loadingAuth, setLoadingAuth] = useState(true);
+    const [loadingProfile, setLoadingProfile] = useState(true);
     const [envError, setEnvError] = useState(false);
 
     const [courses, setCourses] = useState<Course[]>([]);
     const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
-    // Modale affichée uniquement si le chargement est fini ET qu'il n'y a pas de profil
     const [showProfileModal, setShowProfileModal] = useState(false);
 
-    // Formulaire d'ajout
+    // --- NOUVEAUX ETATS POUR LES MODALES ---
+    const [courseToDelete, setCourseToDelete] = useState<string | null>(null); // ID du cours à supprimer
+    const [alertInfo, setAlertInfo] = useState<{title: string, message: string, type: 'error' | 'info'} | null>(null); // Pour les messages d'erreur/info
+
     const [newCourseName, setNewCourseName] = useState('');
     const [newCourseSubject, setNewCourseSubject] = useState('');
     const [learningDate, setLearningDate] = useState('');
 
-    // Navigation Planning : Initialisé au Lundi de la semaine actuelle
     const [planningStartDate, setPlanningStartDate] = useState<Date>(() => {
         return getStartOfWeek(new Date());
     });
 
-    // Profil temporaire (Formulaire)
     const [tempProfile, setTempProfile] = useState<UserProfile>({
         firstName: '', lastName: '', university: '', courseType: 'PASS', currentSemester: 'S1'
     });
@@ -139,33 +136,28 @@ export default function Home() {
 
         const unsubscribeAuth = onAuthStateChanged(auth, async (currentUser) => {
             setUser(currentUser);
-            setLoadingAuth(false); // Auth vérifiée
+            setLoadingAuth(false);
 
             if (currentUser) {
-                // On commence le chargement du profil
                 setLoadingProfile(true);
 
-                // 1. Écouter le Profil
                 const profileRef = doc(db, 'users', currentUser.uid);
                 const unsubscribeProfile = onSnapshot(profileRef, (docSnap) => {
                     if (docSnap.exists()) {
-                        // Profil trouvé !
                         const data = docSnap.data() as UserProfile;
                         setUserProfile(data);
-                        setTempProfile(data); // Pré-remplir le formulaire au cas où
+                        setTempProfile(data);
                         setShowProfileModal(false);
                     } else {
-                        // Pas de profil -> On force la modale
                         setUserProfile(null);
                         setShowProfileModal(true);
                     }
-                    setLoadingProfile(false); // Chargement profil terminé
+                    setLoadingProfile(false);
                 }, (error) => {
                     console.error("Erreur lecture profil:", error);
                     setLoadingProfile(false);
                 });
 
-                // 2. Écouter les Cours
                 const coursesRef = collection(db, 'users', currentUser.uid, 'courses');
                 const q = query(coursesRef, orderBy('startDate', 'desc'));
                 const unsubscribeCourses = onSnapshot(q, (snapshot) => {
@@ -181,7 +173,6 @@ export default function Home() {
                     unsubscribeCourses();
                 };
             } else {
-                // Reset si déconnecté
                 setCourses([]);
                 setUserProfile(null);
                 setLoadingProfile(false);
@@ -201,6 +192,8 @@ export default function Home() {
             console.error("Erreur de connexion", error);
             if (error.code === 'auth/configuration-not-found' || error.code === 'auth/api-key-not-valid-please-pass-a-valid-api-key') {
                 setEnvError(true);
+            } else {
+                setAlertInfo({ title: "Erreur de connexion", message: error.message, type: 'error' });
             }
         }
     };
@@ -215,30 +208,22 @@ export default function Home() {
         e.preventDefault();
         if (!user || !tempProfile.firstName.trim()) return;
 
-        // On met loadingProfile à true pour éviter le flash pendant la sauvegarde
         setLoadingProfile(true);
 
         try {
             await setDoc(doc(db, 'users', user.uid), tempProfile);
-            // Pas besoin de setShowProfileModal(false) ici,
-            // car le onSnapshot va détecter le changement et le faire automatiquement
         } catch (error) {
             console.error("Erreur sauvegarde profil", error);
-            setLoadingProfile(false); // On remet à false en cas d'erreur
-            alert("Erreur lors de la sauvegarde. Vérifiez votre connexion.");
+            setLoadingProfile(false);
+            setAlertInfo({ title: "Erreur", message: "Impossible de sauvegarder le profil. Vérifiez votre connexion.", type: 'error' });
         }
     };
 
     const switchSemester = async () => {
         if (!user || !userProfile) return;
         const newSem = userProfile.currentSemester === 'S1' ? 'S2' : 'S1';
-
-        // Optimistic update pour réactivité immédiate
         setUserProfile({ ...userProfile, currentSemester: newSem });
-
-        await updateDoc(doc(db, 'users', user.uid), {
-            currentSemester: newSem
-        });
+        await updateDoc(doc(db, 'users', user.uid), { currentSemester: newSem });
     };
 
     const addDays = (dateString: string, days: number): Date => {
@@ -253,7 +238,7 @@ export default function Home() {
 
         const intervalsToUse = showAdvanced ? customIntervals : DEFAULT_INTERVALS;
         if (intervalsToUse.length === 0) {
-            alert("Sélectionnez au moins un intervalle.");
+            setAlertInfo({ title: "Attention", message: "Vous devez sélectionner au moins un intervalle de révision (J) pour créer un cours.", type: 'info' });
             return;
         }
 
@@ -280,6 +265,7 @@ export default function Home() {
             setActiveTab('planning');
         } catch (error) {
             console.error("Erreur ajout cours", error);
+            setAlertInfo({ title: "Erreur", message: "Impossible de créer le cours.", type: 'error' });
         }
     };
 
@@ -299,10 +285,19 @@ export default function Home() {
         await updateDoc(courseRef, { reviews: updatedReviews, progress: progress });
     };
 
-    const deleteCourse = async (id: string) => {
-        if (!user) return;
-        if (window.confirm("Supprimer ce cours définitivement ?")) {
-            await deleteDoc(doc(db, 'users', user.uid, 'courses', id));
+    // --- NOUVELLE GESTION SUPPRESSION ---
+    const requestDeleteCourse = (id: string) => {
+        setCourseToDelete(id); // Ouvre la modale de confirmation
+    };
+
+    const confirmDeleteCourse = async () => {
+        if (!user || !courseToDelete) return;
+        try {
+            await deleteDoc(doc(db, 'users', user.uid, 'courses', courseToDelete));
+            setCourseToDelete(null); // Ferme la modale
+        } catch (error) {
+            console.error("Erreur suppression", error);
+            setAlertInfo({ title: "Erreur", message: "Impossible de supprimer ce cours.", type: 'error' });
         }
     };
 
@@ -324,7 +319,6 @@ export default function Home() {
     };
 
     const handleResetToday = () => {
-        // Réinitialise au Lundi de la semaine actuelle
         setPlanningStartDate(getStartOfWeek(new Date()));
     };
 
@@ -387,7 +381,6 @@ export default function Home() {
         const d = new Date(date);
         d.setHours(0,0,0,0);
 
-        // Calcul de la différence en jours
         const diffTime = d.getTime() - today.getTime();
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
@@ -412,7 +405,7 @@ export default function Home() {
         </div>
     );
 
-    // 2. Chargement initial (Auth OU Profil)
+    // 2. Chargement initial
     if (loadingAuth || (user && loadingProfile)) return (
         <div className="min-h-screen bg-slate-50 flex items-center justify-center flex-col gap-4">
             <Loader2 className="w-10 h-10 text-indigo-600 animate-spin" />
@@ -444,7 +437,7 @@ export default function Home() {
     if (showProfileModal) {
         return (
             <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in">
+                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-slide-up-fade">
                     <div className="bg-indigo-600 p-6 text-white text-center">
                         <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3 backdrop-blur-sm">
                             <GraduationCap className="w-8 h-8 text-white" />
@@ -495,7 +488,7 @@ export default function Home() {
 
     // 5. App Principale
     return (
-        <div className="min-h-screen bg-slate-50 text-slate-800 font-sans selection:bg-indigo-100 pb-24">
+        <div className="min-h-screen bg-slate-50 text-slate-800 font-sans selection:bg-indigo-100 pb-24 relative">
             {/* HEADER */}
             <header className="bg-white border-b border-slate-200 sticky top-0 z-20 shadow-sm/50 backdrop-blur-md bg-white/90">
                 <div className="max-w-[95%] mx-auto px-4 h-16 flex items-center justify-between">
@@ -545,7 +538,7 @@ export default function Home() {
 
                 {/* VUE: AJOUTER */}
                 {activeTab === 'add' && (
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 max-w-xl mx-auto">
+                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 max-w-xl mx-auto animate-slide-up-fade">
                         <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2 pb-4 border-b border-slate-100"><Plus className="w-5 h-5 text-indigo-600" />Nouveau cours</h2>
                         <form onSubmit={handleAddCourse} className="space-y-5">
                             <div><label className="block text-sm font-semibold text-slate-700 mb-2">Matière</label><input type="text" placeholder="Ex: Anatomie..." className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 outline-none" value={newCourseSubject} onChange={(e) => setNewCourseSubject(e.target.value)} /></div>
@@ -562,9 +555,9 @@ export default function Home() {
 
                 {/* VUE: PLANNING */}
                 {activeTab === 'planning' && (
-                    <div className="space-y-6">
+                    <div className="space-y-6 animate-slide-up-fade">
 
-                        {/* Contrôles de navigation (Nouveau) */}
+                        {/* Contrôles de navigation */}
                         <div className="flex items-center justify-between bg-white p-2 rounded-2xl shadow-sm border border-slate-200 mb-4 sticky top-16 z-10 backdrop-blur-sm bg-white/90">
                             <button
                                 onClick={handlePrevWeek}
@@ -575,7 +568,6 @@ export default function Home() {
                             </button>
 
                             <div className="flex flex-col items-center">
-                                {/* Label Semaine Dynamique */}
                                 {(() => {
                                     const end = new Date(planningStartDate);
                                     end.setDate(end.getDate() + 6);
@@ -593,7 +585,6 @@ export default function Home() {
                                     )
                                 })()}
 
-                                {/* Bouton reset si on n'est pas sur la semaine actuelle */}
                                 {planningStartDate.getTime() !== getStartOfWeek(new Date()).getTime() && (
                                     <button
                                         onClick={handleResetToday}
@@ -651,14 +642,14 @@ export default function Home() {
 
                 {/* ... All Courses View ... */}
                 {activeTab === 'all' && (
-                    <div className="space-y-4 max-w-4xl mx-auto">
+                    <div className="space-y-4 max-w-4xl mx-auto animate-slide-up-fade">
                         <div className="flex justify-between mb-4 px-1"><h2 className="font-bold text-slate-800 text-lg">Répertoire ({userProfile?.currentSemester})</h2><div className="text-xs font-medium bg-white px-2 py-1 rounded border">Total : {currentSemesterCourses.length}</div></div>
                         {currentSemesterCourses.length === 0 && <div className="text-center py-16 bg-white rounded-2xl border border-dashed"><p className="text-slate-400 mb-4">Aucun cours.</p><button onClick={() => setActiveTab('add')} className="text-indigo-600 font-bold hover:underline">Ajouter</button></div>}
                         {currentSemesterCourses.map(course => (
                             <div key={course.id} className="bg-white rounded-2xl border shadow-sm overflow-hidden hover:shadow-md transition-shadow">
                                 <div className="p-5 flex justify-between items-start">
                                     <div><span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded uppercase mb-2 inline-block">{course.subject}</span><h3 className="font-bold text-slate-800 text-lg">{course.name}</h3><div className="flex items-center gap-3 mt-4"><div className="w-32 h-2 bg-slate-100 rounded-full overflow-hidden"><div className="h-full bg-emerald-500" style={{ width: `${course.progress}%` }} /></div><span className="text-xs font-bold text-emerald-600">{course.progress}%</span></div></div>
-                                    <button onClick={() => deleteCourse(course.id)} className="text-slate-300 hover:text-rose-500 p-2"><Trash2 className="w-4 h-4" /></button>
+                                    <button onClick={() => requestDeleteCourse(course.id)} className="text-slate-300 hover:text-rose-500 p-2"><Trash2 className="w-4 h-4" /></button>
                                 </div>
                                 <div className="grid grid-cols-7 border-t border-slate-100">
                                     {course.reviews.map(review => {
@@ -674,6 +665,63 @@ export default function Home() {
 
             {/* FAB Mobile */}
             {activeTab !== 'add' && <button onClick={() => setActiveTab('add')} className="fixed bottom-6 right-6 w-14 h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-lg flex items-center justify-center md:hidden z-30"><Plus className="w-7 h-7" /></button>}
+
+            {/* --- MODALE DE SUPPRESSION --- */}
+            {courseToDelete && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden p-6 text-center">
+                        <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Trash2 className="w-8 h-8 text-rose-600" />
+                        </div>
+                        <h3 className="text-xl font-bold text-slate-800 mb-2">Supprimer ce cours ?</h3>
+                        <p className="text-slate-500 text-sm mb-6">
+                            Cette action est irréversible. Tout l'historique de révision associé sera perdu.
+                        </p>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setCourseToDelete(null)}
+                                className="flex-1 py-3 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors"
+                            >
+                                Annuler
+                            </button>
+                            <button
+                                onClick={confirmDeleteCourse}
+                                className="flex-1 py-3 bg-rose-600 text-white font-bold rounded-xl hover:bg-rose-700 transition-colors"
+                            >
+                                Supprimer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* --- MODALE D'INFORMATION / ERREUR --- */}
+            {alertInfo && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden p-6 text-center relative">
+                        <button
+                            onClick={() => setAlertInfo(null)}
+                            className="absolute top-4 right-4 text-slate-300 hover:text-slate-600"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+                        <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${alertInfo.type === 'error' ? 'bg-rose-100 text-rose-600' : 'bg-indigo-100 text-indigo-600'}`}>
+                            {alertInfo.type === 'error' ? <AlertTriangle className="w-8 h-8" /> : <AlertCircle className="w-8 h-8" />}
+                        </div>
+                        <h3 className="text-xl font-bold text-slate-800 mb-2">{alertInfo.title}</h3>
+                        <p className="text-slate-500 text-sm mb-6">
+                            {alertInfo.message}
+                        </p>
+                        <button
+                            onClick={() => setAlertInfo(null)}
+                            className="w-full py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors"
+                        >
+                            J'ai compris
+                        </button>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 }
