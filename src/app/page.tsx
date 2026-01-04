@@ -5,7 +5,7 @@ import {
     CheckCircle2, Plus, Trash2, BookOpen, Activity, AlertCircle,
     CalendarDays, Clock, ChevronDown, ChevronUp, Settings, RefreshCcw,
     User, GraduationCap, School, LogOut, Loader2, Key,
-    ChevronLeft, ChevronRight, Calendar, AlertTriangle, X, Save, Palette
+    ChevronLeft, ChevronRight, Calendar, AlertTriangle, X, Save, Palette, Image as ImageIcon
 } from 'lucide-react';
 
 // Import Firebase
@@ -49,6 +49,18 @@ const THEME_NAMES: Record<string, string> = {
     teal: 'Turquoise', slate: 'Ardoise'
 };
 
+// --- CONSTANTES WALLPAPERS ---
+// Note: Pour utiliser vos propres images locales, placez-les dans le dossier public/wallpapers/
+// et remplacez les URLs ci-dessous par '/wallpapers/mon-image.jpg'
+const WALLPAPERS = [
+    { id: 'none', name: 'Neutre', url: '' },
+    { id: 'medical', name: 'Médical', url: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&q=80&w=2560&ixlib=rb-4.0.3' },
+    { id: 'nature', name: 'Nature', url: 'https://images.unsplash.com/photo-1497436072909-60f360e1d4b0?auto=format&fit=crop&q=80&w=2560&ixlib=rb-4.0.3' },
+    { id: 'abstract', name: 'Abstrait', url: 'https://images.unsplash.com/photo-1557682250-33bd709cbe85?auto=format&fit=crop&q=80&w=2560&ixlib=rb-4.0.3' },
+    { id: 'geometric', name: 'Géométrique', url: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&q=80&w=2560&ixlib=rb-4.0.3' },
+    { id: 'clouds', name: 'Nuages', url: 'https://images.unsplash.com/photo-1499346030926-9a72daac6ea6?auto=format&fit=crop&q=80&w=2560&ixlib=rb-4.0.3' },
+];
+
 // --- TYPES ---
 type Review = {
     jKey: string;
@@ -67,6 +79,7 @@ type UserProfile = {
     courseType: CourseType;
     currentSemester: Semester;
     theme?: string;
+    wallpaper?: string; // Nouveau champ pour l'URL du fond d'écran
 };
 
 type Course = {
@@ -136,7 +149,7 @@ export default function Home() {
     });
 
     const [tempProfile, setTempProfile] = useState<UserProfile>({
-        firstName: '', lastName: '', university: '', courseType: 'PASS', currentSemester: 'S1', theme: 'indigo'
+        firstName: '', lastName: '', university: '', courseType: 'PASS', currentSemester: 'S1', theme: 'indigo', wallpaper: ''
     });
 
     const [showAdvanced, setShowAdvanced] = useState(false);
@@ -144,9 +157,14 @@ export default function Home() {
     const [activeTab, setActiveTab] = useState<Tab>('planning');
     const [showOverdue, setShowOverdue] = useState(true);
 
-    // --- LOGIQUE THEMES ---
-    const activeTheme = userProfile?.theme || 'indigo';
+    // --- LOGIQUE THEMES & WALLPAPER ---
+    const activeTheme = activeTab === 'profile' ? tempProfile.theme || 'indigo' : userProfile?.theme || 'indigo';
     const themeColors = THEMES[activeTheme] || THEMES['indigo'];
+
+    // Gestion du fond d'écran : Priorité à la prévisualisation (tempProfile) si on est dans l'onglet profil
+    const activeWallpaperUrl = activeTab === 'profile'
+        ? (tempProfile.wallpaper || '')
+        : (userProfile?.wallpaper || '');
 
     const dynamicStyle = {
         '--theme-50': themeColors[50],
@@ -157,10 +175,13 @@ export default function Home() {
         '--theme-600': themeColors[600],
         '--theme-700': themeColors[700],
         '--theme-900': themeColors[900],
+        backgroundImage: activeWallpaperUrl ? `url(${activeWallpaperUrl})` : 'none',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed', // Effet parallaxe simple
     } as React.CSSProperties;
 
     // Fonction pour obtenir une couleur unique par cours
-    // Elle exclut le thème actif global
     const getCourseColor = (courseId: string) => {
         const availableThemes = Object.keys(THEMES).filter(t => t !== activeTheme);
         let hash = 0;
@@ -535,8 +556,12 @@ export default function Home() {
     // 5. App Principale
     return (
         <div className="h-screen w-screen overflow-hidden bg-slate-50 text-slate-800 font-sans selection:bg-[var(--theme-100)] relative flex flex-col" style={dynamicStyle}>
+
+            {/* Overlay pour la lisibilité si un fond d'écran est actif */}
+            {activeWallpaperUrl && <div className="absolute inset-0 bg-white/80 z-0 pointer-events-none backdrop-blur-[2px]"></div>}
+
             {/* HEADER */}
-            <header className="bg-white border-b border-slate-200 z-20 shadow-sm/50 backdrop-blur-md bg-white/90 flex-none">
+            <header className="bg-white/90 border-b border-slate-200 z-20 shadow-sm/50 backdrop-blur-md flex-none">
                 <div className="max-w-[95%] mx-auto px-4 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <div className="bg-[var(--theme-600)] p-2 rounded-lg shadow-sm">
@@ -573,7 +598,7 @@ export default function Home() {
             </header>
 
             {/* CONTENU */}
-            <main className="flex-1 overflow-y-auto scrollbar-hide max-w-[95%] w-full mx-auto px-4 py-6 pb-24">
+            <main className="flex-1 overflow-y-auto scrollbar-hide max-w-[95%] w-full mx-auto px-4 py-6 pb-24 z-10">
                 <div className="mb-6 animate-fade-in flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-bold text-slate-800">
@@ -587,14 +612,14 @@ export default function Home() {
 
                 {/* TABS (Cachés si profil) */}
                 {activeTab !== 'profile' && (
-                    <div className="flex gap-2 mb-8 bg-white p-1.5 rounded-2xl shadow-sm border border-slate-200 max-w-md mx-auto">
+                    <div className="flex gap-2 mb-8 bg-white/90 p-1.5 rounded-2xl shadow-sm border border-slate-200 max-w-md mx-auto backdrop-blur-sm">
                         <button onClick={() => setActiveTab('planning')} className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold rounded-xl transition-all ${activeTab === 'planning' ? 'bg-[var(--theme-50)] text-[var(--theme-700)] shadow-sm ring-1 ring-[var(--theme-200)]' : 'text-slate-500 hover:bg-slate-50'}`}><CalendarDays className="w-4 h-4" />Planning</button>
                         <button onClick={() => setActiveTab('all')} className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold rounded-xl transition-all ${activeTab === 'all' ? 'bg-[var(--theme-50)] text-[var(--theme-700)] shadow-sm ring-1 ring-[var(--theme-200)]' : 'text-slate-500 hover:bg-slate-50'}`}><BookOpen className="w-4 h-4" />Cours</button>
                         <button onClick={() => setActiveTab('add')} className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold rounded-xl transition-all ${activeTab === 'add' ? 'bg-[var(--theme-50)] text-[var(--theme-700)] shadow-sm ring-1 ring-[var(--theme-200)]' : 'text-slate-500 hover:bg-slate-50'}`}><Plus className="w-4 h-4" />Ajouter</button>
                     </div>
                 )}
 
-                {/* --- VUE: PROFIL --- */}
+                {/* --- VUE: PROFIL (AVEC THEMES & WALLPAPERS) --- */}
                 {activeTab === 'profile' && (
                     <div className="max-w-2xl mx-auto animate-slide-up-fade">
                         <button
@@ -605,8 +630,8 @@ export default function Home() {
                             Retour au planning
                         </button>
 
-                        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                            <div className="bg-slate-50 p-6 border-b border-slate-100 flex items-center gap-4">
+                        <div className="bg-white/95 rounded-2xl shadow-sm border border-slate-200 overflow-hidden backdrop-blur-sm">
+                            <div className="bg-slate-50/80 p-6 border-b border-slate-100 flex items-center gap-4">
                                 <div className="w-16 h-16 bg-[var(--theme-100)] rounded-full flex items-center justify-center">
                                     <GraduationCap className="w-8 h-8 text-[var(--theme-600)]" />
                                 </div>
@@ -639,7 +664,48 @@ export default function Home() {
                                             </button>
                                         ))}
                                     </div>
-                                    <p className="text-xs text-slate-400 mt-2">Couleur sélectionnée : <span className="font-bold capitalize" style={{color: THEMES[tempProfile.theme || 'indigo'][600]}}>{THEME_NAMES[tempProfile.theme || 'indigo']}</span></p>
+                                </div>
+
+                                <hr className="border-slate-100" />
+
+                                {/* SELECTEUR DE WALLPAPER */}
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-600 mb-3 flex items-center gap-2">
+                                        <ImageIcon className="w-4 h-4" /> Fond d'écran
+                                    </label>
+                                    <div className="grid grid-cols-3 sm:grid-cols-3 gap-4">
+                                        {WALLPAPERS.map((wp) => (
+                                            <div
+                                                key={wp.id}
+                                                onClick={() => setTempProfile({ ...tempProfile, wallpaper: wp.url })}
+                                                className={`
+                                            relative h-24 rounded-xl cursor-pointer overflow-hidden border-2 transition-all group
+                                            ${(tempProfile.wallpaper === wp.url || (!tempProfile.wallpaper && wp.id === 'none'))
+                                                    ? 'border-[var(--theme-600)] ring-2 ring-[var(--theme-200)]'
+                                                    : 'border-transparent hover:border-slate-300'}
+                                        `}
+                                            >
+                                                {wp.url ? (
+                                                    <img src={wp.url} alt={wp.name} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
+                                                ) : (
+                                                    <div className="w-full h-full bg-slate-100 flex items-center justify-center text-slate-400 text-xs font-medium">Aucun</div>
+                                                )}
+                                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+
+                                                {/* Badge nom */}
+                                                <div className="absolute bottom-0 left-0 right-0 bg-white/90 py-1 px-2 text-[10px] font-bold text-center text-slate-600 backdrop-blur-sm">
+                                                    {wp.name}
+                                                </div>
+
+                                                {/* Icone sélection */}
+                                                {(tempProfile.wallpaper === wp.url || (!tempProfile.wallpaper && wp.id === 'none')) && (
+                                                    <div className="absolute top-1 right-1 bg-[var(--theme-600)] rounded-full p-0.5">
+                                                        <CheckCircle2 className="w-3 h-3 text-white" />
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
 
                                 <hr className="border-slate-100" />
@@ -693,7 +759,7 @@ export default function Home() {
 
                 {/* VUE: AJOUTER */}
                 {activeTab === 'add' && (
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 max-w-xl mx-auto animate-slide-up-fade">
+                    <div className="bg-white/95 rounded-2xl shadow-sm border border-slate-200 p-6 max-w-xl mx-auto animate-slide-up-fade backdrop-blur-sm">
                         <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2 pb-4 border-b border-slate-100"><Plus className="w-5 h-5 text-[var(--theme-600)]" />Nouveau cours</h2>
                         <form onSubmit={handleAddCourse} className="space-y-5">
                             <div><label className="block text-sm font-semibold text-slate-700 mb-2">Matière</label><input type="text" placeholder="Ex: Anatomie..." className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[var(--theme-500)] outline-none" value={newCourseSubject} onChange={(e) => setNewCourseSubject(e.target.value)} /></div>
@@ -713,7 +779,7 @@ export default function Home() {
                     <div className="space-y-6 animate-slide-up-fade">
 
                         {/* Contrôles de navigation */}
-                        <div className="flex items-center justify-between bg-white p-2 rounded-2xl shadow-sm border border-slate-200 mb-4 sticky top-0 z-10 backdrop-blur-sm bg-white/90">
+                        <div className="flex items-center justify-between bg-white/90 p-2 rounded-2xl shadow-sm border border-slate-200 mb-4 sticky top-0 z-10 backdrop-blur-sm">
                             <button
                                 onClick={handlePrevWeek}
                                 className="p-3 rounded-xl hover:bg-slate-100 text-slate-600 transition-colors"
@@ -762,7 +828,7 @@ export default function Home() {
 
                         {/* Retard */}
                         {overdueTasks.length > 0 && (
-                            <div className="bg-rose-50 border border-rose-100 rounded-2xl overflow-hidden shadow-sm max-w-4xl mx-auto">
+                            <div className="bg-rose-50/95 border border-rose-100 rounded-2xl overflow-hidden shadow-sm max-w-4xl mx-auto backdrop-blur-sm">
                                 <button onClick={() => setShowOverdue(!showOverdue)} className="w-full px-5 py-3 flex items-center justify-between bg-rose-100/50 text-rose-700 font-bold"><div className="flex items-center gap-2"><AlertCircle className="w-5 h-5" /><span>En Retard ({overdueTasks.length})</span></div>{showOverdue ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}</button>
                                 {showOverdue && (<div className="p-2 grid gap-2 sm:grid-cols-2">{overdueTasks.map((task) => {
                                     const courseColor = getCourseColor(task.courseId);
@@ -797,8 +863,8 @@ export default function Home() {
                                 const isToday = isActuallyToday(date);
 
                                 return (
-                                    <div key={date.toISOString()} className={`min-w-[85vw] sm:min-w-[320px] xl:min-w-0 flex-shrink-0 snap-center rounded-2xl border flex flex-col h-[70vh] sm:h-[600px] ${isToday ? 'bg-white border-[var(--theme-200)] shadow-xl ring-1 ring-[var(--theme-50)] z-10' : 'bg-white border-slate-200 shadow-sm opacity-95'}`}>
-                                        <div className={`p-4 border-b flex justify-between rounded-t-2xl sticky top-0 z-10 ${isToday ? 'bg-[var(--theme-50)]/80 backdrop-blur-sm' : 'bg-slate-50/80'}`}>
+                                    <div key={date.toISOString()} className={`min-w-[85vw] sm:min-w-[320px] xl:min-w-0 flex-shrink-0 snap-center rounded-2xl border flex flex-col h-[70vh] sm:h-[600px] ${isToday ? 'bg-white/95 border-[var(--theme-200)] shadow-xl ring-1 ring-[var(--theme-50)] z-10' : 'bg-white/90 border-slate-200 shadow-sm opacity-95'} backdrop-blur-sm`}>
+                                        <div className={`p-4 border-b flex justify-between rounded-t-2xl sticky top-0 z-10 ${isToday ? 'bg-[var(--theme-50)]/90' : 'bg-slate-50/90'} backdrop-blur-md`}>
                                             <div>
                                                 <h3 className={`font-bold text-lg capitalize ${isToday ? 'text-[var(--theme-900)]' : 'text-slate-700'}`}>
                                                     {getDayLabel(date)}
@@ -851,12 +917,12 @@ export default function Home() {
                 {/* ... All Courses View ... */}
                 {activeTab === 'all' && (
                     <div className="space-y-4 max-w-4xl mx-auto animate-slide-up-fade">
-                        <div className="flex justify-between mb-4 px-1"><h2 className="font-bold text-slate-800 text-lg">Répertoire ({userProfile?.currentSemester})</h2><div className="text-xs font-medium bg-white px-2 py-1 rounded border">Total : {currentSemesterCourses.length}</div></div>
-                        {currentSemesterCourses.length === 0 && <div className="text-center py-16 bg-white rounded-2xl border border-dashed"><p className="text-slate-400 mb-4">Aucun cours.</p><button onClick={() => setActiveTab('add')} className="text-[var(--theme-600)] font-bold hover:underline">Ajouter</button></div>}
+                        <div className="flex justify-between mb-4 px-1"><h2 className="font-bold text-slate-800 text-lg">Répertoire ({userProfile?.currentSemester})</h2><div className="text-xs font-medium bg-white/90 backdrop-blur-sm px-2 py-1 rounded border">Total : {currentSemesterCourses.length}</div></div>
+                        {currentSemesterCourses.length === 0 && <div className="text-center py-16 bg-white/90 backdrop-blur-sm rounded-2xl border border-dashed"><p className="text-slate-400 mb-4">Aucun cours.</p><button onClick={() => setActiveTab('add')} className="text-[var(--theme-600)] font-bold hover:underline">Ajouter</button></div>}
                         {currentSemesterCourses.map(course => {
                             const courseColor = getCourseColor(course.id);
                             return (
-                                <div key={course.id} className="bg-white rounded-2xl border shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                                <div key={course.id} className="bg-white/95 backdrop-blur-sm rounded-2xl border shadow-sm overflow-hidden hover:shadow-md transition-shadow">
                                     <div className="p-5 flex justify-between items-start">
                                         <div>
                                             <span className="text-[10px] font-bold px-2 py-1 rounded uppercase mb-2 inline-block" style={{backgroundColor: courseColor[50], color: courseColor[600]}}>{course.subject}</span>
@@ -877,8 +943,8 @@ export default function Home() {
                                             const cellStyle = review.done
                                                 ? { backgroundColor: courseColor[50] }
                                                 : isPast
-                                                    ? { backgroundColor: '#fff1f2' } // Rose pastel pour le retard (fixe car sémantique)
-                                                    : { backgroundColor: '#fff' };
+                                                    ? { backgroundColor: '#fff1f2' }
+                                                    : { backgroundColor: 'transparent' };
 
                                             // Pastille/Texte
                                             const content = review.done

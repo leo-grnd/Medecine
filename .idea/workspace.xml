@@ -4,8 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c693e493-3c04-49ac-8316-706d1fe43317" name="Changes" comment="Add dynamic theming support with customizable color palettes: integrated theme constants, updated UI elements for theme adaptability, and added user preference management for selecting themes.">
-      <change beforePath="$PROJECT_DIR$/src/app/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/page.tsx" afterDir="false" />
+    <list default="true" id="c693e493-3c04-49ac-8316-706d1fe43317" name="Changes" comment="Introduce per-course dynamic color theming: implemented unique theme assignment for courses, updated UI elements with contextual theming, and enhanced hover/active visual feedback.">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -110,7 +110,7 @@
       <workItem from="1767526143981" duration="2636000" />
       <workItem from="1767529094402" duration="24000" />
       <workItem from="1767529126353" duration="1437000" />
-      <workItem from="1767535044303" duration="3238000" />
+      <workItem from="1767535044303" duration="4247000" />
     </task>
     <task id="LOCAL-00004" summary="Integrate Firebase for authentication and Firestore database. Added user authentication with Google, profile management syncing with Firestore, and real-time course updates. Enhanced UX with loading states and error handling.">
       <option name="closed" value="true" />
@@ -192,7 +192,15 @@
       <option name="project" value="LOCAL" />
       <updated>1767538780716</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="Introduce per-course dynamic color theming: implemented unique theme assignment for courses, updated UI elements with contextual theming, and enhanced hover/active visual feedback.">
+      <option name="closed" value="true" />
+      <created>1767539207814</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1767539207814</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -226,6 +234,7 @@
     <MESSAGE value="Add &quot;Profile&quot; tab with enhanced user preferences management, onboarding improvements, and save state handling. Refined tab navigation, updated modals, and improved UX for profile form interactions." />
     <MESSAGE value="Refine layout structure and styling: update container to full-screen dimensions, enhance header and navigation controls with flexible positioning, and optimize main content scroll behavior." />
     <MESSAGE value="Add dynamic theming support with customizable color palettes: integrated theme constants, updated UI elements for theme adaptability, and added user preference management for selecting themes." />
-    <option name="LAST_COMMIT_MESSAGE" value="Add dynamic theming support with customizable color palettes: integrated theme constants, updated UI elements for theme adaptability, and added user preference management for selecting themes." />
+    <MESSAGE value="Introduce per-course dynamic color theming: implemented unique theme assignment for courses, updated UI elements with contextual theming, and enhanced hover/active visual feedback." />
+    <option name="LAST_COMMIT_MESSAGE" value="Introduce per-course dynamic color theming: implemented unique theme assignment for courses, updated UI elements with contextual theming, and enhanced hover/active visual feedback." />
   </component>
 </project>
