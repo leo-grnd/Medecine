@@ -365,7 +365,7 @@ export default function Home() {
                     <div className="bg-indigo-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
                         <Activity className="w-10 h-10 text-indigo-600" />
                     </div>
-                    <h1 className="text-3xl font-bold text-slate-800 mb-2">J-Master<span className="text-indigo-600">.Med</span></h1>
+                    <h1 className="text-3xl font-bold text-slate-800 mb-2">Med&J</h1>
                     <p className="text-slate-500 mb-8">La méthode des J automatisée pour réussir vos études de santé.</p>
                     <button onClick={handleLogin} className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-3">
                         <img src="https://www.google.com/favicon.ico" alt="Google" className="w-5 h-5" /> Continuer avec Google
@@ -439,7 +439,7 @@ export default function Home() {
                             <Activity className="text-white w-5 h-5" />
                         </div>
                         <div className="flex flex-col">
-                            <span className="font-bold text-lg leading-none text-indigo-900">J-Master<span className="text-indigo-500 text-sm ml-0.5">.Med</span></span>
+                            <span className="font-bold text-lg leading-none text-indigo-900">Med&J</span>
                             <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">
                 {userProfile?.courseType} • {userProfile?.university}
               </span>

@@ -4,9 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c693e493-3c04-49ac-8316-706d1fe43317" name="Changes" comment="Configure Firebase hosting with static export. Updated `.gitignore`, added Firebase configuration files (`firebase.json`, `.firebaserc`), and static `404.html` and `index.html` templates. Adjusted `next.config.ts` for static build compatibility.">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    <list default="true" id="c693e493-3c04-49ac-8316-706d1fe43317" name="Changes" comment="Update `.gitignore` to exclude `forme.txt` and modify IDE workspace configuration">
+      <change beforePath="$PROJECT_DIR$/src/app/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/page.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -110,7 +109,7 @@
       <updated>1767526142244</updated>
       <workItem from="1767526143981" duration="2636000" />
       <workItem from="1767529094402" duration="24000" />
-      <workItem from="1767529126353" duration="999000" />
+      <workItem from="1767529126353" duration="1350000" />
     </task>
     <task id="LOCAL-00004" summary="Integrate Firebase for authentication and Firestore database. Added user authentication with Google, profile management syncing with Firestore, and real-time course updates. Enhanced UX with loading states and error handling.">
       <option name="closed" value="true" />
@@ -128,7 +127,15 @@
       <option name="project" value="LOCAL" />
       <updated>1767529570826</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="Update `.gitignore` to exclude `forme.txt` and modify IDE workspace configuration">
+      <option name="closed" value="true" />
+      <created>1767530139089</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1767530139089</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -154,6 +161,7 @@
     <MESSAGE value="Add university suggestions for autocompletion in user profile form. Enhanced input with `datalist` functionality for better usability." />
     <MESSAGE value="Integrate Firebase for authentication and Firestore database. Added user authentication with Google, profile management syncing with Firestore, and real-time course updates. Enhanced UX with loading states and error handling." />
     <MESSAGE value="Configure Firebase hosting with static export. Updated `.gitignore`, added Firebase configuration files (`firebase.json`, `.firebaserc`), and static `404.html` and `index.html` templates. Adjusted `next.config.ts` for static build compatibility." />
-    <option name="LAST_COMMIT_MESSAGE" value="Configure Firebase hosting with static export. Updated `.gitignore`, added Firebase configuration files (`firebase.json`, `.firebaserc`), and static `404.html` and `index.html` templates. Adjusted `next.config.ts` for static build compatibility." />
+    <MESSAGE value="Update `.gitignore` to exclude `forme.txt` and modify IDE workspace configuration" />
+    <option name="LAST_COMMIT_MESSAGE" value="Update `.gitignore` to exclude `forme.txt` and modify IDE workspace configuration" />
   </component>
 </project>
