@@ -498,7 +498,7 @@ export default function Home() {
         <div className="min-h-screen bg-slate-50 text-slate-800 font-sans selection:bg-indigo-100 pb-24">
             {/* HEADER */}
             <header className="bg-white border-b border-slate-200 sticky top-0 z-20 shadow-sm/50 backdrop-blur-md bg-white/90">
-                <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+                <div className="max-w-[95%] mx-auto px-4 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <div className="bg-indigo-600 p-2 rounded-lg shadow-sm">
                             <Activity className="text-white w-5 h-5" />
@@ -528,7 +528,7 @@ export default function Home() {
             </header>
 
             {/* CONTENU */}
-            <main className="max-w-7xl mx-auto px-4 py-6">
+            <main className="max-w-[95%] mx-auto px-4 py-6">
                 <div className="mb-6 animate-fade-in flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-bold text-slate-800">Bonjour, {userProfile?.firstName} 👋</h1>
@@ -565,7 +565,7 @@ export default function Home() {
                     <div className="space-y-6">
 
                         {/* Contrôles de navigation (Nouveau) */}
-                        <div className="flex items-center justify-between bg-white p-2 rounded-2xl shadow-sm border border-slate-200 mb-4">
+                        <div className="flex items-center justify-between bg-white p-2 rounded-2xl shadow-sm border border-slate-200 mb-4 sticky top-16 z-10 backdrop-blur-sm bg-white/90">
                             <button
                                 onClick={handlePrevWeek}
                                 className="p-3 rounded-xl hover:bg-slate-100 text-slate-600 transition-colors"
@@ -580,7 +580,6 @@ export default function Home() {
                                     const end = new Date(planningStartDate);
                                     end.setDate(end.getDate() + 6);
                                     const weekNum = getWeekNumber(planningStartDate);
-                                    // Formatage intelligent
                                     const startMonth = planningStartDate.toLocaleDateString('fr-FR', { month: 'long' });
                                     const endMonth = end.toLocaleDateString('fr-FR', { month: 'long' });
 
@@ -623,14 +622,14 @@ export default function Home() {
                             </div>
                         )}
 
-                        {/* Timeline */}
-                        <div className="flex gap-4 overflow-x-auto pb-8 -mx-4 px-4 sm:mx-0 sm:px-0 snap-x snap-mandatory scrollbar-hide">
+                        {/* Timeline Horizontal Layout */}
+                        <div className="flex xl:grid xl:grid-cols-7 gap-4 overflow-x-auto xl:overflow-visible pb-8 -mx-4 px-4 sm:mx-0 sm:px-0 snap-x snap-mandatory scrollbar-hide">
                             {next7Days.map((date, index) => {
                                 const dayTasks = getTasksForDate(date);
-                                const isToday = isActuallyToday(date); // Vrai aujourd'hui (date système)
+                                const isToday = isActuallyToday(date);
 
                                 return (
-                                    <div key={date.toISOString()} className={`min-w-[85vw] sm:min-w-[320px] flex-shrink-0 snap-center rounded-2xl border flex flex-col h-[70vh] sm:h-[600px] ${isToday ? 'bg-white border-indigo-200 shadow-xl ring-1 ring-indigo-50 z-10' : 'bg-white border-slate-200 shadow-sm opacity-95'}`}>
+                                    <div key={date.toISOString()} className={`min-w-[85vw] sm:min-w-[320px] xl:min-w-0 flex-shrink-0 snap-center rounded-2xl border flex flex-col h-[70vh] sm:h-[600px] ${isToday ? 'bg-white border-indigo-200 shadow-xl ring-1 ring-indigo-50 z-10' : 'bg-white border-slate-200 shadow-sm opacity-95'}`}>
                                         <div className={`p-4 border-b flex justify-between rounded-t-2xl sticky top-0 z-10 ${isToday ? 'bg-indigo-50/80 backdrop-blur-sm' : 'bg-slate-50/80'}`}>
                                             <div>
                                                 <h3 className={`font-bold text-lg capitalize ${isToday ? 'text-indigo-900' : 'text-slate-700'}`}>
@@ -650,7 +649,7 @@ export default function Home() {
                     </div>
                 )}
 
-                {/* VUE: TOUS LES COURS */}
+                {/* ... All Courses View ... */}
                 {activeTab === 'all' && (
                     <div className="space-y-4 max-w-4xl mx-auto">
                         <div className="flex justify-between mb-4 px-1"><h2 className="font-bold text-slate-800 text-lg">Répertoire ({userProfile?.currentSemester})</h2><div className="text-xs font-medium bg-white px-2 py-1 rounded border">Total : {currentSemesterCourses.length}</div></div>
