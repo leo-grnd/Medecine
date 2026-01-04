@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react';
 import {
     CheckCircle2, Plus, Trash2, BookOpen, Activity, AlertCircle,
     CalendarDays, Clock, ChevronDown, ChevronUp, Settings, RefreshCcw,
-    User, GraduationCap, School, LogOut, Loader2, Key
+    User, GraduationCap, School, LogOut, Loader2, Key,
+    ChevronLeft, ChevronRight, Calendar
 } from 'lucide-react';
 
 // Import Firebase
@@ -70,6 +71,27 @@ const UNIVERSITY_SUGGESTIONS = [
     "Université de Toulouse", "Université de Strasbourg", "Université de Rennes 1"
 ];
 
+// --- UTILITAIRES DATES ---
+
+// Obtenir le numéro de semaine (ISO 8601)
+const getWeekNumber = (d: Date) => {
+    const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    const dayNum = date.getUTCDay() || 7;
+    date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+    return Math.ceil((((date.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+};
+
+// Obtenir le Lundi de la semaine pour une date donnée
+const getStartOfWeek = (d: Date) => {
+    const date = new Date(d);
+    const day = date.getDay(); // 0 (Dimanche) à 6 (Samedi)
+    const diff = date.getDate() - day + (day === 0 ? -6 : 1); // Ajuster pour que Lundi soit le 1er jour
+    const monday = new Date(date.setDate(diff));
+    monday.setHours(0, 0, 0, 0);
+    return monday;
+};
+
 export default function Home() {
     // --- ETATS ---
     const [user, setUser] = useState<FirebaseUser | null>(null);
@@ -89,6 +111,11 @@ export default function Home() {
     const [newCourseName, setNewCourseName] = useState('');
     const [newCourseSubject, setNewCourseSubject] = useState('');
     const [learningDate, setLearningDate] = useState('');
+
+    // Navigation Planning : Initialisé au Lundi de la semaine actuelle
+    const [planningStartDate, setPlanningStartDate] = useState<Date>(() => {
+        return getStartOfWeek(new Date());
+    });
 
     // Profil temporaire (Formulaire)
     const [tempProfile, setTempProfile] = useState<UserProfile>({
@@ -283,6 +310,24 @@ export default function Home() {
         setCustomIntervals(prev => prev.includes(val) ? prev.filter(i => i !== val) : [...prev, val].sort((a, b) => a - b));
     };
 
+    // --- NAVIGATION PLANNING ---
+    const handlePrevWeek = () => {
+        const newDate = new Date(planningStartDate);
+        newDate.setDate(newDate.getDate() - 7);
+        setPlanningStartDate(newDate);
+    };
+
+    const handleNextWeek = () => {
+        const newDate = new Date(planningStartDate);
+        newDate.setDate(newDate.getDate() + 7);
+        setPlanningStartDate(newDate);
+    };
+
+    const handleResetToday = () => {
+        // Réinitialise au Lundi de la semaine actuelle
+        setPlanningStartDate(getStartOfWeek(new Date()));
+    };
+
     // --- FILTRES & HELPERS ---
     const currentSemesterCourses = courses.filter(c => {
         if (!userProfile) return true;
@@ -320,18 +365,39 @@ export default function Home() {
 
     const generateNext7Days = () => {
         const days = [];
-        const today = new Date();
+        const start = new Date(planningStartDate);
         for (let i = 0; i < 7; i++) {
-            const d = new Date(today);
-            d.setDate(today.getDate() + i);
+            const d = new Date(start);
+            d.setDate(start.getDate() + i);
             days.push(d);
         }
         return days;
     };
 
+    const isActuallyToday = (d: Date) => {
+        const today = new Date();
+        return d.getDate() === today.getDate() &&
+            d.getMonth() === today.getMonth() &&
+            d.getFullYear() === today.getFullYear();
+    };
+
+    const getDayLabel = (date: Date) => {
+        const today = new Date();
+        today.setHours(0,0,0,0);
+        const d = new Date(date);
+        d.setHours(0,0,0,0);
+
+        // Calcul de la différence en jours
+        const diffTime = d.getTime() - today.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        if (diffDays === 0) return "Aujourd'hui";
+        if (diffDays === 1) return "Demain";
+        return date.toLocaleDateString('fr-FR', { weekday: 'long' });
+    };
+
     const overdueTasks = getOverdueTasks();
     const next7Days = generateNext7Days();
-    const getDayName = (dateObj: Date) => dateObj.toLocaleDateString('fr-FR', { weekday: 'long' });
 
     // --- RENDU ---
 
@@ -347,7 +413,6 @@ export default function Home() {
     );
 
     // 2. Chargement initial (Auth OU Profil)
-    // On affiche le loader tant que l'auth n'est pas checkée OU que l'utilisateur est connecté mais que son profil charge encore
     if (loadingAuth || (user && loadingProfile)) return (
         <div className="min-h-screen bg-slate-50 flex items-center justify-center flex-col gap-4">
             <Loader2 className="w-10 h-10 text-indigo-600 animate-spin" />
@@ -375,7 +440,7 @@ export default function Home() {
         );
     }
 
-    // 4. Modale Profil (Uniquement si pas de profil chargé)
+    // 4. Modale Profil
     if (showProfileModal) {
         return (
             <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
@@ -428,7 +493,7 @@ export default function Home() {
         );
     }
 
-    // 5. App Principale (Uniquement si User ET Profil chargés)
+    // 5. App Principale
     return (
         <div className="min-h-screen bg-slate-50 text-slate-800 font-sans selection:bg-indigo-100 pb-24">
             {/* HEADER */}
@@ -498,20 +563,81 @@ export default function Home() {
                 {/* VUE: PLANNING */}
                 {activeTab === 'planning' && (
                     <div className="space-y-6">
+
+                        {/* Contrôles de navigation (Nouveau) */}
+                        <div className="flex items-center justify-between bg-white p-2 rounded-2xl shadow-sm border border-slate-200 mb-4">
+                            <button
+                                onClick={handlePrevWeek}
+                                className="p-3 rounded-xl hover:bg-slate-100 text-slate-600 transition-colors"
+                                title="Semaine précédente"
+                            >
+                                <ChevronLeft className="w-5 h-5" />
+                            </button>
+
+                            <div className="flex flex-col items-center">
+                                {/* Label Semaine Dynamique */}
+                                {(() => {
+                                    const end = new Date(planningStartDate);
+                                    end.setDate(end.getDate() + 6);
+                                    const weekNum = getWeekNumber(planningStartDate);
+                                    // Formatage intelligent
+                                    const startMonth = planningStartDate.toLocaleDateString('fr-FR', { month: 'long' });
+                                    const endMonth = end.toLocaleDateString('fr-FR', { month: 'long' });
+
+                                    return (
+                                        <>
+                                            <span className="text-xs font-bold text-indigo-500 uppercase tracking-widest mb-0.5">Semaine {weekNum}</span>
+                                            <span className="text-sm font-bold text-slate-800 capitalize">
+                                  {planningStartDate.getDate()} {startMonth === endMonth ? '' : startMonth} - {end.getDate()} {endMonth}
+                              </span>
+                                        </>
+                                    )
+                                })()}
+
+                                {/* Bouton reset si on n'est pas sur la semaine actuelle */}
+                                {planningStartDate.getTime() !== getStartOfWeek(new Date()).getTime() && (
+                                    <button
+                                        onClick={handleResetToday}
+                                        className="text-[10px] font-bold text-slate-400 hover:text-indigo-600 mt-1 flex items-center gap-1 transition-colors"
+                                    >
+                                        <RefreshCcw className="w-3 h-3" />
+                                        Revenir à aujourd'hui
+                                    </button>
+                                )}
+                            </div>
+
+                            <button
+                                onClick={handleNextWeek}
+                                className="p-3 rounded-xl hover:bg-slate-100 text-slate-600 transition-colors"
+                                title="Semaine suivante"
+                            >
+                                <ChevronRight className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        {/* Retard */}
                         {overdueTasks.length > 0 && (
                             <div className="bg-rose-50 border border-rose-100 rounded-2xl overflow-hidden shadow-sm max-w-4xl mx-auto">
                                 <button onClick={() => setShowOverdue(!showOverdue)} className="w-full px-5 py-3 flex items-center justify-between bg-rose-100/50 text-rose-700 font-bold"><div className="flex items-center gap-2"><AlertCircle className="w-5 h-5" /><span>En Retard ({overdueTasks.length})</span></div>{showOverdue ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}</button>
                                 {showOverdue && (<div className="p-2 grid gap-2 sm:grid-cols-2">{overdueTasks.map((task) => (<div key={`${task.courseId}-${task.jKey}`} className="bg-white p-3 rounded-xl border-l-4 border-l-rose-500 shadow-sm flex justify-between items-center"><div className="min-w-0 flex-1 pr-3"><div className="flex gap-2 mb-1"><span className="text-[10px] font-black bg-rose-50 text-rose-500 px-1.5 py-0.5 rounded">{task.jKey}</span><span className="text-xs text-slate-400 truncate">{task.courseSubject}</span></div><h3 className="font-semibold text-slate-800 text-sm truncate">{task.courseName}</h3></div><button onClick={() => toggleReview(task.courseId, task.jKey)} className="w-10 h-10 rounded-full bg-rose-50 text-rose-300 hover:bg-emerald-500 hover:text-white flex items-center justify-center"><CheckCircle2 className="w-6 h-6" /></button></div>))}</div>)}
                             </div>
                         )}
+
+                        {/* Timeline */}
                         <div className="flex gap-4 overflow-x-auto pb-8 -mx-4 px-4 sm:mx-0 sm:px-0 snap-x snap-mandatory scrollbar-hide">
                             {next7Days.map((date, index) => {
                                 const dayTasks = getTasksForDate(date);
-                                const isToday = index === 0;
+                                const isToday = isActuallyToday(date); // Vrai aujourd'hui (date système)
+
                                 return (
                                     <div key={date.toISOString()} className={`min-w-[85vw] sm:min-w-[320px] flex-shrink-0 snap-center rounded-2xl border flex flex-col h-[70vh] sm:h-[600px] ${isToday ? 'bg-white border-indigo-200 shadow-xl ring-1 ring-indigo-50 z-10' : 'bg-white border-slate-200 shadow-sm opacity-95'}`}>
                                         <div className={`p-4 border-b flex justify-between rounded-t-2xl sticky top-0 z-10 ${isToday ? 'bg-indigo-50/80 backdrop-blur-sm' : 'bg-slate-50/80'}`}>
-                                            <div><h3 className={`font-bold text-lg capitalize ${isToday ? 'text-indigo-900' : 'text-slate-700'}`}>{index === 0 ? 'Aujourd\'hui' : index === 1 ? 'Demain' : getDayName(date)}</h3><p className="text-xs font-medium text-slate-400">{date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}</p></div>
+                                            <div>
+                                                <h3 className={`font-bold text-lg capitalize ${isToday ? 'text-indigo-900' : 'text-slate-700'}`}>
+                                                    {getDayLabel(date)}
+                                                </h3>
+                                                <p className="text-xs font-medium text-slate-400">{date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}</p>
+                                            </div>
                                             {dayTasks.length > 0 && <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${isToday ? 'bg-indigo-100 text-indigo-700' : 'bg-white text-slate-500'}`}>{dayTasks.length}</span>}
                                         </div>
                                         <div className="p-3 space-y-3 flex-1 overflow-y-auto custom-scrollbar">

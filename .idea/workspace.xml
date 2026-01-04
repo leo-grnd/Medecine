@@ -4,7 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c693e493-3c04-49ac-8316-706d1fe43317" name="Changes" comment="Update `.gitignore` to exclude `forme.txt` and modify IDE workspace configuration">
+    <list default="true" id="c693e493-3c04-49ac-8316-706d1fe43317" name="Changes" comment="Update branding: rename `J-Master.Med` to `Med&amp;J` in UI components.">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/app/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/page.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -35,25 +36,25 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_MARK_IGNORED_FILES_AS_EXCLUDED": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
-    "git-widget-placeholder": "main",
-    "junie.onboarding.icon.badge.shown": "true",
-    "node.js.detected.package.eslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "npm.Next.js: server-side.executor": "Run",
-    "to.speed.mode.migration.done": "true",
-    "ts.external.directory.path": "Z:\\Projets\\Médecine\\node_modules\\typescript\\lib",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_MARK_IGNORED_FILES_AS_EXCLUDED&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;npm.Next.js: server-side.executor&quot;: &quot;Run&quot;,
+    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;Z:\\Projets\\Médecine\\node_modules\\typescript\\lib&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager" selected="npm.Next.js: server-side">
     <configuration name="Next.js: debug client-side" type="JavascriptDebugType" uri="http://localhost:3000/">
       <method v="2" />
@@ -109,7 +110,8 @@
       <updated>1767526142244</updated>
       <workItem from="1767526143981" duration="2636000" />
       <workItem from="1767529094402" duration="24000" />
-      <workItem from="1767529126353" duration="1350000" />
+      <workItem from="1767529126353" duration="1437000" />
+      <workItem from="1767535044303" duration="1077000" />
     </task>
     <task id="LOCAL-00004" summary="Integrate Firebase for authentication and Firestore database. Added user authentication with Google, profile management syncing with Firestore, and real-time course updates. Enhanced UX with loading states and error handling.">
       <option name="closed" value="true" />
@@ -135,7 +137,15 @@
       <option name="project" value="LOCAL" />
       <updated>1767530139089</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="Update branding: rename `J-Master.Med` to `Med&amp;J` in UI components.">
+      <option name="closed" value="true" />
+      <created>1767530540059</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1767530540059</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -162,6 +172,7 @@
     <MESSAGE value="Integrate Firebase for authentication and Firestore database. Added user authentication with Google, profile management syncing with Firestore, and real-time course updates. Enhanced UX with loading states and error handling." />
     <MESSAGE value="Configure Firebase hosting with static export. Updated `.gitignore`, added Firebase configuration files (`firebase.json`, `.firebaserc`), and static `404.html` and `index.html` templates. Adjusted `next.config.ts` for static build compatibility." />
     <MESSAGE value="Update `.gitignore` to exclude `forme.txt` and modify IDE workspace configuration" />
-    <option name="LAST_COMMIT_MESSAGE" value="Update `.gitignore` to exclude `forme.txt` and modify IDE workspace configuration" />
+    <MESSAGE value="Update branding: rename `J-Master.Med` to `Med&amp;J` in UI components." />
+    <option name="LAST_COMMIT_MESSAGE" value="Update branding: rename `J-Master.Med` to `Med&amp;J` in UI components." />
   </component>
 </project>
