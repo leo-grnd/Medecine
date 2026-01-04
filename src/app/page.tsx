@@ -50,18 +50,12 @@ const THEME_NAMES: Record<string, string> = {
 };
 
 // --- CONSTANTES WALLPAPERS ---
-// INSTRUCTIONS POUR IMAGES LOCALES :
-// 1. Placez vos images dans le dossier 'public/wallpapers/' de votre projet.
-// 2. Ajoutez une ligne ci-dessous comme l'exemple 'Mon Image Locale'.
-// 3. L'URL doit commencer par '/wallpapers/'.
 const WALLPAPERS = [
     { id: 'none', name: 'Neutre', url: '' },
     { id: 'Fuji', name: 'Mont Fuji', url: '/wallpapers/Mont_Fuji.jpg'},
     { id: 'Waves', name: 'Vague de kanagawa', url: '/wallpapers/Vagues.jpg'},
     { id: 'Naples', name: 'Naples 1780', url: '/wallpapers/Naples_1780.jpg'},
     { id: 'Japan', name: 'Art Japonais', url: '/wallpapers/Poète_japonais.jpg'},
-    // --- Exemple si vous avez une image "foret.jpg" dans public/wallpapers/ ---
-    // { id: 'local1', name: 'Forêt', url: '/wallpapers/foret.jpg' },
     { id: 'abstract', name: 'Abstrait', url: 'https://images.unsplash.com/photo-1557682250-33bd709cbe85?auto=format&fit=crop&q=80&w=2560&ixlib=rb-4.0.3' },
     { id: 'geometric', name: 'Géométrique', url: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&q=80&w=2560&ixlib=rb-4.0.3' },
 ];
@@ -181,10 +175,9 @@ export default function Home() {
         '--theme-700': themeColors[700],
         '--theme-900': themeColors[900],
         backgroundImage: activeWallpaperUrl ? `url(${activeWallpaperUrl})` : 'none',
-        backgroundSize: 'cover', // Remplissage standard sans ajustement complexe
+        backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
-        // Retrait de backgroundAttachment: fixed pour éviter les effets de zoom indésirables sur mobile
     } as React.CSSProperties;
 
     // Fonction pour obtenir une couleur unique par cours
@@ -868,30 +861,57 @@ export default function Home() {
                             {next7Days.map((date, index) => {
                                 const dayTasks = getTasksForDate(date);
                                 const isToday = isActuallyToday(date);
+                                const hasTasks = dayTasks.length > 0;
+
+                                // Logique de style épuré et transparent
+                                let containerClass = "";
+                                let headerClass = "";
+
+                                if (isToday) {
+                                    // Aujourd'hui : On garde une mise en avant mais plus légère/translucide
+                                    containerClass = "bg-white/70 border-[var(--theme-300)]/30 shadow-xl ring-1 ring-white/50 z-10 backdrop-blur-md";
+                                    headerClass = "bg-[var(--theme-50)]/40 border-b border-[var(--theme-200)]/20";
+                                } else if (hasTasks) {
+                                    // Jours avec cours : Transparence moyenne pour voir le fond mais grouper le contenu
+                                    containerClass = "bg-white/40 border-white/20 shadow-sm backdrop-blur-md hover:bg-white/50 transition-colors";
+                                    headerClass = "bg-white/20 border-b border-white/10";
+                                } else {
+                                    // Jours vides : Très transparent ("Rien de prévu"), effet "ghost"
+                                    containerClass = "bg-white/10 border-transparent shadow-none backdrop-blur-sm";
+                                    headerClass = "bg-transparent border-none";
+                                }
 
                                 return (
-                                    <div key={date.toISOString()} className={`min-w-[85vw] sm:min-w-[320px] xl:min-w-0 flex-shrink-0 snap-center rounded-2xl border flex flex-col h-[70vh] sm:h-[600px] ${isToday ? 'bg-white/95 border-[var(--theme-200)] shadow-xl ring-1 ring-[var(--theme-50)] z-10' : 'bg-white/90 border-slate-200 shadow-sm opacity-95'} backdrop-blur-sm`}>
-                                        <div className={`p-4 border-b flex justify-between rounded-t-2xl sticky top-0 z-10 ${isToday ? 'bg-[var(--theme-50)]/90' : 'bg-slate-50/90'} backdrop-blur-md`}>
+                                    <div key={date.toISOString()} className={`min-w-[85vw] sm:min-w-[320px] xl:min-w-0 flex-shrink-0 snap-center rounded-2xl border flex flex-col h-[70vh] sm:h-[600px] ${containerClass}`}>
+                                        <div className={`p-4 flex justify-between rounded-t-2xl sticky top-0 z-10 ${headerClass}`}>
                                             <div>
-                                                <h3 className={`font-bold text-lg capitalize ${isToday ? 'text-[var(--theme-900)]' : 'text-slate-700'}`}>
+                                                <h3 className={`font-bold text-lg capitalize ${isToday ? 'text-[var(--theme-900)]' : 'text-slate-800'}`}>
                                                     {getDayLabel(date)}
                                                 </h3>
-                                                <p className="text-xs font-medium text-slate-400">{date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}</p>
+                                                <p className={`text-xs font-medium ${isToday ? 'text-[var(--theme-700)]' : 'text-slate-600'}`}>{date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}</p>
                                             </div>
-                                            {dayTasks.length > 0 && <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${isToday ? 'bg-[var(--theme-100)] text-[var(--theme-700)]' : 'bg-white text-slate-500'}`}>{dayTasks.length}</span>}
+                                            {dayTasks.length > 0 && <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${isToday ? 'bg-white/80 text-[var(--theme-700)] border-[var(--theme-200)]' : 'bg-white/60 text-slate-700 border-white/40'}`}>{dayTasks.length}</span>}
                                         </div>
                                         <div className="p-3 space-y-3 flex-1 overflow-y-auto custom-scrollbar">
-                                            {dayTasks.length === 0 ? <div className="h-full flex flex-col items-center justify-center text-slate-300"><Clock className="w-10 h-10 mb-3 opacity-20" /><p className="text-sm font-medium">Rien de prévu</p></div> : dayTasks.map(task => {
+                                            {dayTasks.length === 0 ? (
+                                                <div className="h-full flex flex-col items-center justify-center text-slate-500/80">
+                                                    <div className="bg-white/20 p-3 rounded-full mb-2 backdrop-blur-sm">
+                                                        <Clock className="w-8 h-8 opacity-60" />
+                                                    </div>
+                                                    <p className="text-sm font-medium font-sans bg-white/30 px-3 py-1 rounded-full backdrop-blur-md">Rien de prévu</p>
+                                                </div>
+                                            ) : dayTasks.map(task => {
                                                 const courseColor = getCourseColor(task.courseId);
                                                 return (
-                                                    <div key={`${task.courseId}-${task.jKey}`} className={`bg-white p-3.5 rounded-xl border shadow-sm group relative overflow-hidden ${task.done ? 'opacity-60 grayscale' : ''}`} style={{borderColor: !task.done ? courseColor[200] : undefined}}>
+                                                    <div key={`${task.courseId}-${task.jKey}`} className={`bg-white/95 p-3.5 rounded-xl border shadow-sm group relative overflow-hidden ${task.done ? 'opacity-60 grayscale' : ''}`} style={{borderColor: !task.done ? courseColor[200] : 'transparent'}}>
+                                                        {/* ... contenu carte inchangé car bg-white/95 assure l'opacité demandée ... */}
                                                         <div className="flex justify-between items-start gap-3 relative z-10">
                                                             <div className="min-w-0 flex-1">
                                                                 <div className="flex gap-2 mb-1.5">
                                                 <span className={`text-[10px] font-black px-1.5 py-0.5 rounded`} style={{backgroundColor: task.jKey === 'J0' ? '#1e293b' : courseColor[100], color: task.jKey === 'J0' ? '#fff' : courseColor[700]}}>
                                                     {task.jKey}
                                                 </span>
-                                                                    <span className="text-xs font-semibold text-slate-400 truncate">{task.courseSubject}</span>
+                                                                    <span className="text-xs font-semibold text-slate-500 truncate">{task.courseSubject}</span>
                                                                 </div>
                                                                 <h4 className={`font-semibold text-sm ${task.done ? 'line-through text-slate-400' : 'text-slate-800'}`}>{task.courseName}</h4>
                                                             </div>
@@ -900,7 +920,7 @@ export default function Home() {
                                                                 className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors`}
                                                                 style={
                                                                     task.done
-                                                                        ? { backgroundColor: '#ecfdf5', color: '#059669' } // Emerald fixed for done
+                                                                        ? { backgroundColor: '#ecfdf5', color: '#059669' }
                                                                         : { backgroundColor: courseColor[50], color: courseColor[300], borderColor: courseColor[200], border: '1px solid' }
                                                                 }
                                                                 onMouseEnter={(e) => { if(!task.done) { e.currentTarget.style.backgroundColor = courseColor[500]; e.currentTarget.style.color = '#fff'; e.currentTarget.style.borderColor = courseColor[500]; } }}

@@ -4,8 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c693e493-3c04-49ac-8316-706d1fe43317" name="Changes" comment="Refine wallpaper management: update instructions for local image use, simplify comments, and streamline style handling for profile backgrounds.">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    <list default="true" id="c693e493-3c04-49ac-8316-706d1fe43317" name="Changes" comment="Refine wallpaper handling and profile view comments: adjust background styles for better mobile behavior, update image scaling, and clarify section labels.">
       <change beforePath="$PROJECT_DIR$/src/app/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/page.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -112,6 +111,7 @@
       <workItem from="1767529094402" duration="24000" />
       <workItem from="1767529126353" duration="1437000" />
       <workItem from="1767535044303" duration="6149000" />
+      <workItem from="1767543760470" duration="571000" />
     </task>
     <task id="LOCAL-00004" summary="Integrate Firebase for authentication and Firestore database. Added user authentication with Google, profile management syncing with Firestore, and real-time course updates. Enhanced UX with loading states and error handling.">
       <option name="closed" value="true" />
@@ -217,7 +217,23 @@
       <option name="project" value="LOCAL" />
       <updated>1767540585031</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="Add new wallpapers: include Mont Fuji, Kanagawa Waves, Naples 1780, and Japanese Art presets.">
+      <option name="closed" value="true" />
+      <created>1767543891638</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1767543891638</updated>
+    </task>
+    <task id="LOCAL-00018" summary="Refine wallpaper handling and profile view comments: adjust background styles for better mobile behavior, update image scaling, and clarify section labels.">
+      <option name="closed" value="true" />
+      <created>1767544313921</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1767544313921</updated>
+    </task>
+    <option name="localTasksCounter" value="19" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -254,6 +270,8 @@
     <MESSAGE value="Introduce per-course dynamic color theming: implemented unique theme assignment for courses, updated UI elements with contextual theming, and enhanced hover/active visual feedback." />
     <MESSAGE value="Add wallpaper support with customizable presets: implemented dynamic background selection, updated profile settings UI, and integrated parallax and blur effects for improved visual experience." />
     <MESSAGE value="Refine wallpaper management: update instructions for local image use, simplify comments, and streamline style handling for profile backgrounds." />
-    <option name="LAST_COMMIT_MESSAGE" value="Refine wallpaper management: update instructions for local image use, simplify comments, and streamline style handling for profile backgrounds." />
+    <MESSAGE value="Add new wallpapers: include Mont Fuji, Kanagawa Waves, Naples 1780, and Japanese Art presets." />
+    <MESSAGE value="Refine wallpaper handling and profile view comments: adjust background styles for better mobile behavior, update image scaling, and clarify section labels." />
+    <option name="LAST_COMMIT_MESSAGE" value="Refine wallpaper handling and profile view comments: adjust background styles for better mobile behavior, update image scaling, and clarify section labels." />
   </component>
 </project>
