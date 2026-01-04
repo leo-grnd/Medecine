@@ -56,7 +56,10 @@ const THEME_NAMES: Record<string, string> = {
 // 3. L'URL doit commencer par '/wallpapers/'.
 const WALLPAPERS = [
     { id: 'none', name: 'Neutre', url: '' },
-
+    { id: 'Fuji', name: 'Mont Fuji', url: '/wallpapers/Mont_Fuji.jpg'},
+    { id: 'Waves', name: 'Vague de kanagawa', url: '/wallpapers/Vagues.jpg'},
+    { id: 'Naples', name: 'Naples 1780', url: '/wallpapers/Naples_1780.jpg'},
+    { id: 'Japan', name: 'Art Japonais', url: '/wallpapers/Poète_japonais.jpg'},
     // --- Exemple si vous avez une image "foret.jpg" dans public/wallpapers/ ---
     // { id: 'local1', name: 'Forêt', url: '/wallpapers/foret.jpg' },
     { id: 'abstract', name: 'Abstrait', url: 'https://images.unsplash.com/photo-1557682250-33bd709cbe85?auto=format&fit=crop&q=80&w=2560&ixlib=rb-4.0.3' },
