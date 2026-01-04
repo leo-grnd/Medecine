@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
     CheckCircle2, Plus, Trash2, BookOpen, Activity, AlertCircle,
     CalendarDays, Clock, ChevronDown, ChevronUp, Settings, RefreshCcw,
@@ -29,7 +29,7 @@ import {
     orderBy
 } from 'firebase/firestore';
 
-// --- CONSTANTES THEMES (Nuances Tailwind) ---
+// --- CONSTANTES THEMES ---
 const THEMES: Record<string, { [key: number]: string }> = {
     indigo: { 50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe', 300: '#a5b4fc', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca', 900: '#312e81' },
     emerald: { 50: '#ecfdf5', 100: '#d1fae5', 200: '#a7f3d0', 300: '#6ee7b7', 500: '#10b981', 600: '#059669', 700: '#047857', 900: '#064e3b' },
@@ -66,7 +66,7 @@ type UserProfile = {
     university: string;
     courseType: CourseType;
     currentSemester: Semester;
-    theme?: string; // Nouveau champ thème
+    theme?: string;
 };
 
 type Course = {
@@ -93,7 +93,6 @@ const UNIVERSITY_SUGGESTIONS = [
 ];
 
 // --- UTILITAIRES DATES ---
-
 const getWeekNumber = (d: Date) => {
     const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
     const dayNum = date.getUTCDay() || 7;
@@ -145,11 +144,10 @@ export default function Home() {
     const [activeTab, setActiveTab] = useState<Tab>('planning');
     const [showOverdue, setShowOverdue] = useState(true);
 
-    // --- STYLE DYNAMIQUE (THEME) ---
+    // --- LOGIQUE THEMES ---
     const activeTheme = userProfile?.theme || 'indigo';
     const themeColors = THEMES[activeTheme] || THEMES['indigo'];
 
-    // Injection des variables CSS pour le thème
     const dynamicStyle = {
         '--theme-50': themeColors[50],
         '--theme-100': themeColors[100],
@@ -160,6 +158,19 @@ export default function Home() {
         '--theme-700': themeColors[700],
         '--theme-900': themeColors[900],
     } as React.CSSProperties;
+
+    // Fonction pour obtenir une couleur unique par cours
+    // Elle exclut le thème actif global
+    const getCourseColor = (courseId: string) => {
+        const availableThemes = Object.keys(THEMES).filter(t => t !== activeTheme);
+        let hash = 0;
+        for (let i = 0; i < courseId.length; i++) {
+            hash = courseId.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        const index = Math.abs(hash) % availableThemes.length;
+        const themeKey = availableThemes[index];
+        return THEMES[themeKey];
+    };
 
     // --- 1. GESTION AUTHENTIFICATION & CHARGEMENT DONNÉES ---
     useEffect(() => {
@@ -496,7 +507,7 @@ export default function Home() {
                                 <input type="text" required className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-[var(--theme-500)] outline-none" value={tempProfile.lastName} onChange={(e) => setTempProfile({...tempProfile, lastName: e.target.value})} />
                             </div>
                         </div>
-                        {/* ... Reste du formulaire (Université, Cursus) simplifié pour la lisibilité ... */}
+                        {/* ... Reste du formulaire simplifié ... */}
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Cursus</label>
@@ -583,7 +594,7 @@ export default function Home() {
                     </div>
                 )}
 
-                {/* --- VUE: PROFIL (AVEC THEMES) --- */}
+                {/* --- VUE: PROFIL --- */}
                 {activeTab === 'profile' && (
                     <div className="max-w-2xl mx-auto animate-slide-up-fade">
                         <button
@@ -753,7 +764,29 @@ export default function Home() {
                         {overdueTasks.length > 0 && (
                             <div className="bg-rose-50 border border-rose-100 rounded-2xl overflow-hidden shadow-sm max-w-4xl mx-auto">
                                 <button onClick={() => setShowOverdue(!showOverdue)} className="w-full px-5 py-3 flex items-center justify-between bg-rose-100/50 text-rose-700 font-bold"><div className="flex items-center gap-2"><AlertCircle className="w-5 h-5" /><span>En Retard ({overdueTasks.length})</span></div>{showOverdue ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}</button>
-                                {showOverdue && (<div className="p-2 grid gap-2 sm:grid-cols-2">{overdueTasks.map((task) => (<div key={`${task.courseId}-${task.jKey}`} className="bg-white p-3 rounded-xl border-l-4 border-l-rose-500 shadow-sm flex justify-between items-center"><div className="min-w-0 flex-1 pr-3"><div className="flex gap-2 mb-1"><span className="text-[10px] font-black bg-rose-50 text-rose-500 px-1.5 py-0.5 rounded">{task.jKey}</span><span className="text-xs text-slate-400 truncate">{task.courseSubject}</span></div><h3 className="font-semibold text-slate-800 text-sm truncate">{task.courseName}</h3></div><button onClick={() => toggleReview(task.courseId, task.jKey)} className="w-10 h-10 rounded-full bg-rose-50 text-rose-300 hover:bg-emerald-500 hover:text-white flex items-center justify-center"><CheckCircle2 className="w-6 h-6" /></button></div>))}</div>)}
+                                {showOverdue && (<div className="p-2 grid gap-2 sm:grid-cols-2">{overdueTasks.map((task) => {
+                                    const courseColor = getCourseColor(task.courseId);
+                                    return (
+                                        <div key={`${task.courseId}-${task.jKey}`} className="bg-white p-3 rounded-xl border-l-4 shadow-sm flex justify-between items-center" style={{borderLeftColor: courseColor[500]}}>
+                                            <div className="min-w-0 flex-1 pr-3">
+                                                <div className="flex gap-2 mb-1">
+                                                    <span className="text-[10px] font-black px-1.5 py-0.5 rounded" style={{backgroundColor: courseColor[50], color: courseColor[700]}}>{task.jKey}</span>
+                                                    <span className="text-xs text-slate-400 truncate">{task.courseSubject}</span>
+                                                </div>
+                                                <h3 className="font-semibold text-slate-800 text-sm truncate">{task.courseName}</h3>
+                                            </div>
+                                            <button
+                                                onClick={() => toggleReview(task.courseId, task.jKey)}
+                                                className="w-10 h-10 rounded-full hover:text-white flex items-center justify-center transition-colors"
+                                                style={{color: courseColor[300], backgroundColor: courseColor[50]}}
+                                                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = courseColor[500]; e.currentTarget.style.color = '#fff'; }}
+                                                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = courseColor[50]; e.currentTarget.style.color = courseColor[300]; }}
+                                            >
+                                                <CheckCircle2 className="w-6 h-6" />
+                                            </button>
+                                        </div>
+                                    )
+                                })}</div>)}
                             </div>
                         )}
 
@@ -775,7 +808,38 @@ export default function Home() {
                                             {dayTasks.length > 0 && <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${isToday ? 'bg-[var(--theme-100)] text-[var(--theme-700)]' : 'bg-white text-slate-500'}`}>{dayTasks.length}</span>}
                                         </div>
                                         <div className="p-3 space-y-3 flex-1 overflow-y-auto custom-scrollbar">
-                                            {dayTasks.length === 0 ? <div className="h-full flex flex-col items-center justify-center text-slate-300"><Clock className="w-10 h-10 mb-3 opacity-20" /><p className="text-sm font-medium">Rien de prévu</p></div> : dayTasks.map(task => (<div key={`${task.courseId}-${task.jKey}`} className={`bg-white p-3.5 rounded-xl border shadow-sm group relative overflow-hidden ${task.done ? 'opacity-60 grayscale' : 'hover:border-[var(--theme-300)]'}`}><div className="flex justify-between items-start gap-3 relative z-10"><div className="min-w-0 flex-1"><div className="flex gap-2 mb-1.5"><span className={`text-[10px] font-black px-1.5 py-0.5 rounded ${task.jKey === 'J0' ? 'bg-slate-800 text-white' : 'bg-[var(--theme-100)] text-[var(--theme-700)]'}`}>{task.jKey}</span><span className="text-xs font-semibold text-slate-400 truncate">{task.courseSubject}</span></div><h4 className={`font-semibold text-sm ${task.done ? 'line-through text-slate-400' : 'text-slate-800'}`}>{task.courseName}</h4></div><button onClick={() => toggleReview(task.courseId, task.jKey)} className={`w-10 h-10 rounded-full flex items-center justify-center ${task.done ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-50 text-slate-300 border hover:bg-emerald-500 hover:text-white'}`}><CheckCircle2 className="w-5 h-5" /></button></div>{!task.done && <div className="absolute bottom-0 left-0 h-0.5 bg-[var(--theme-500)]/20 w-full"></div>}</div>))}
+                                            {dayTasks.length === 0 ? <div className="h-full flex flex-col items-center justify-center text-slate-300"><Clock className="w-10 h-10 mb-3 opacity-20" /><p className="text-sm font-medium">Rien de prévu</p></div> : dayTasks.map(task => {
+                                                const courseColor = getCourseColor(task.courseId);
+                                                return (
+                                                    <div key={`${task.courseId}-${task.jKey}`} className={`bg-white p-3.5 rounded-xl border shadow-sm group relative overflow-hidden ${task.done ? 'opacity-60 grayscale' : ''}`} style={{borderColor: !task.done ? courseColor[200] : undefined}}>
+                                                        <div className="flex justify-between items-start gap-3 relative z-10">
+                                                            <div className="min-w-0 flex-1">
+                                                                <div className="flex gap-2 mb-1.5">
+                                                <span className={`text-[10px] font-black px-1.5 py-0.5 rounded`} style={{backgroundColor: task.jKey === 'J0' ? '#1e293b' : courseColor[100], color: task.jKey === 'J0' ? '#fff' : courseColor[700]}}>
+                                                    {task.jKey}
+                                                </span>
+                                                                    <span className="text-xs font-semibold text-slate-400 truncate">{task.courseSubject}</span>
+                                                                </div>
+                                                                <h4 className={`font-semibold text-sm ${task.done ? 'line-through text-slate-400' : 'text-slate-800'}`}>{task.courseName}</h4>
+                                                            </div>
+                                                            <button
+                                                                onClick={() => toggleReview(task.courseId, task.jKey)}
+                                                                className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors`}
+                                                                style={
+                                                                    task.done
+                                                                        ? { backgroundColor: '#ecfdf5', color: '#059669' } // Emerald fixed for done
+                                                                        : { backgroundColor: courseColor[50], color: courseColor[300], borderColor: courseColor[200], border: '1px solid' }
+                                                                }
+                                                                onMouseEnter={(e) => { if(!task.done) { e.currentTarget.style.backgroundColor = courseColor[500]; e.currentTarget.style.color = '#fff'; e.currentTarget.style.borderColor = courseColor[500]; } }}
+                                                                onMouseLeave={(e) => { if(!task.done) { e.currentTarget.style.backgroundColor = courseColor[50]; e.currentTarget.style.color = courseColor[300]; e.currentTarget.style.borderColor = courseColor[200]; } }}
+                                                            >
+                                                                <CheckCircle2 className="w-5 h-5" />
+                                                            </button>
+                                                        </div>
+                                                        {!task.done && <div className="absolute bottom-0 left-0 h-0.5 w-full" style={{backgroundColor: courseColor[200]}}></div>}
+                                                    </div>
+                                                )
+                                            })}
                                         </div>
                                     </div>
                                 )
@@ -789,20 +853,43 @@ export default function Home() {
                     <div className="space-y-4 max-w-4xl mx-auto animate-slide-up-fade">
                         <div className="flex justify-between mb-4 px-1"><h2 className="font-bold text-slate-800 text-lg">Répertoire ({userProfile?.currentSemester})</h2><div className="text-xs font-medium bg-white px-2 py-1 rounded border">Total : {currentSemesterCourses.length}</div></div>
                         {currentSemesterCourses.length === 0 && <div className="text-center py-16 bg-white rounded-2xl border border-dashed"><p className="text-slate-400 mb-4">Aucun cours.</p><button onClick={() => setActiveTab('add')} className="text-[var(--theme-600)] font-bold hover:underline">Ajouter</button></div>}
-                        {currentSemesterCourses.map(course => (
-                            <div key={course.id} className="bg-white rounded-2xl border shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-                                <div className="p-5 flex justify-between items-start">
-                                    <div><span className="text-[10px] font-bold text-[var(--theme-600)] bg-[var(--theme-50)] px-2 py-1 rounded uppercase mb-2 inline-block">{course.subject}</span><h3 className="font-bold text-slate-800 text-lg">{course.name}</h3><div className="flex items-center gap-3 mt-4"><div className="w-32 h-2 bg-slate-100 rounded-full overflow-hidden"><div className="h-full bg-emerald-500" style={{ width: `${course.progress}%` }} /></div><span className="text-xs font-bold text-emerald-600">{course.progress}%</span></div></div>
-                                    <button onClick={() => requestDeleteCourse(course.id)} className="text-slate-300 hover:text-rose-500 p-2"><Trash2 className="w-4 h-4" /></button>
+                        {currentSemesterCourses.map(course => {
+                            const courseColor = getCourseColor(course.id);
+                            return (
+                                <div key={course.id} className="bg-white rounded-2xl border shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                                    <div className="p-5 flex justify-between items-start">
+                                        <div>
+                                            <span className="text-[10px] font-bold px-2 py-1 rounded uppercase mb-2 inline-block" style={{backgroundColor: courseColor[50], color: courseColor[600]}}>{course.subject}</span>
+                                            <h3 className="font-bold text-slate-800 text-lg">{course.name}</h3>
+                                            <div className="flex items-center gap-3 mt-4">
+                                                <div className="w-32 h-2 bg-slate-100 rounded-full overflow-hidden">
+                                                    <div className="h-full transition-all duration-700" style={{ width: `${course.progress}%`, backgroundColor: courseColor[500] }} />
+                                                </div>
+                                                <span className="text-xs font-bold" style={{color: courseColor[600]}}>{course.progress}%</span>
+                                            </div>
+                                        </div>
+                                        <button onClick={() => requestDeleteCourse(course.id)} className="text-slate-300 hover:text-rose-500 p-2"><Trash2 className="w-4 h-4" /></button>
+                                    </div>
+                                    <div className="grid grid-cols-7 border-t border-slate-100">
+                                        {course.reviews.map(review => {
+                                            const isPast = new Date(review.date) < new Date() && new Date(review.date).toDateString() !== new Date().toDateString();
+                                            // Cellule de la grille
+                                            const cellStyle = review.done
+                                                ? { backgroundColor: courseColor[50] }
+                                                : isPast
+                                                    ? { backgroundColor: '#fff1f2' } // Rose pastel pour le retard (fixe car sémantique)
+                                                    : { backgroundColor: '#fff' };
+
+                                            // Pastille/Texte
+                                            const content = review.done
+                                                ? <div className="w-2 h-2 rounded-full" style={{backgroundColor: courseColor[500]}}></div>
+                                                : <span className={`text-[10px] font-bold ${isPast ? 'text-rose-400' : 'text-slate-300'}`}>{review.interval}</span>;
+
+                                            return (<div key={review.jKey} onClick={() => toggleReview(course.id, review.jKey)} className={`h-12 flex items-center justify-center border-r border-slate-100 last:border-r-0 cursor-pointer hover:opacity-80`} style={cellStyle}>{content}</div>)
+                                        })}
+                                    </div>
                                 </div>
-                                <div className="grid grid-cols-7 border-t border-slate-100">
-                                    {course.reviews.map(review => {
-                                        const isPast = new Date(review.date) < new Date() && new Date(review.date).toDateString() !== new Date().toDateString();
-                                        return (<div key={review.jKey} onClick={() => toggleReview(course.id, review.jKey)} className={`h-12 flex items-center justify-center border-r border-slate-100 last:border-r-0 cursor-pointer ${review.done ? 'bg-emerald-50/50' : isPast ? 'bg-rose-50/50' : 'bg-white'}`}>{review.done ? <div className="w-2 h-2 rounded-full bg-emerald-500"></div> : <span className={`text-[10px] font-bold ${isPast ? 'text-rose-400' : 'text-slate-300'}`}>{review.interval}</span>}</div>)
-                                    })}
-                                </div>
-                            </div>
-                        ))}
+                            )})}
                     </div>
                 )}
             </main>
