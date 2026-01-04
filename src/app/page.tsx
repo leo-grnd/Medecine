@@ -5,7 +5,7 @@ import {
     CheckCircle2, Plus, Trash2, BookOpen, Activity, AlertCircle,
     CalendarDays, Clock, ChevronDown, ChevronUp, Settings, RefreshCcw,
     User, GraduationCap, School, LogOut, Loader2, Key,
-    ChevronLeft, ChevronRight, Calendar, AlertTriangle, X
+    ChevronLeft, ChevronRight, Calendar, AlertTriangle, X, Save
 } from 'lucide-react';
 
 // Import Firebase
@@ -58,7 +58,8 @@ type Course = {
     semester: Semester;
 };
 
-type Tab = 'planning' | 'all' | 'add';
+// Ajout de 'profile' aux onglets possibles
+type Tab = 'planning' | 'all' | 'add' | 'profile';
 
 const DEFAULT_INTERVALS = [0, 1, 3, 7, 14, 30, 60];
 const AVAILABLE_OPTS = [0, 1, 2, 3, 4, 5, 7, 10, 14, 15, 20, 21, 28, 30, 42, 45, 60];
@@ -95,7 +96,8 @@ export default function Home() {
     const [user, setUser] = useState<FirebaseUser | null>(null);
 
     const [loadingAuth, setLoadingAuth] = useState(true);
-    const [loadingProfile, setLoadingProfile] = useState(true);
+    const [loadingProfile, setLoadingProfile] = useState(true); // Chargement initial des données
+    const [isSaving, setIsSaving] = useState(false); // État spécifique pour le bouton sauvegarder
     const [envError, setEnvError] = useState(false);
 
     const [courses, setCourses] = useState<Course[]>([]);
@@ -103,9 +105,8 @@ export default function Home() {
 
     const [showProfileModal, setShowProfileModal] = useState(false);
 
-    // --- NOUVEAUX ETATS POUR LES MODALES ---
-    const [courseToDelete, setCourseToDelete] = useState<string | null>(null); // ID du cours à supprimer
-    const [alertInfo, setAlertInfo] = useState<{title: string, message: string, type: 'error' | 'info'} | null>(null); // Pour les messages d'erreur/info
+    const [courseToDelete, setCourseToDelete] = useState<string | null>(null);
+    const [alertInfo, setAlertInfo] = useState<{title: string, message: string, type: 'error' | 'info'} | null>(null);
 
     const [newCourseName, setNewCourseName] = useState('');
     const [newCourseSubject, setNewCourseSubject] = useState('');
@@ -149,6 +150,7 @@ export default function Home() {
                         setTempProfile(data);
                         setShowProfileModal(false);
                     } else {
+                        // Si pas de profil, on reste sur la modale d'onboarding
                         setUserProfile(null);
                         setShowProfileModal(true);
                     }
@@ -202,20 +204,25 @@ export default function Home() {
         await signOut(auth);
         setUserProfile(null);
         setShowProfileModal(false);
+        setActiveTab('planning'); // Reset tab on logout
     };
 
     const handleSaveProfile = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!user || !tempProfile.firstName.trim()) return;
 
-        setLoadingProfile(true);
+        // On utilise un état spécifique pour le bouton sauvegarder
+        setIsSaving(true);
 
         try {
             await setDoc(doc(db, 'users', user.uid), tempProfile);
+            setAlertInfo({ title: "Succès", message: "Vos informations ont été mises à jour.", type: 'info' });
         } catch (error) {
             console.error("Erreur sauvegarde profil", error);
-            setLoadingProfile(false);
-            setAlertInfo({ title: "Erreur", message: "Impossible de sauvegarder le profil. Vérifiez votre connexion.", type: 'error' });
+            setAlertInfo({ title: "Erreur", message: "Impossible de sauvegarder le profil.", type: 'error' });
+        } finally {
+            // On arrête le chargement quoi qu'il arrive (même si rien n'a changé)
+            setIsSaving(false);
         }
     };
 
@@ -285,16 +292,15 @@ export default function Home() {
         await updateDoc(courseRef, { reviews: updatedReviews, progress: progress });
     };
 
-    // --- NOUVELLE GESTION SUPPRESSION ---
     const requestDeleteCourse = (id: string) => {
-        setCourseToDelete(id); // Ouvre la modale de confirmation
+        setCourseToDelete(id);
     };
 
     const confirmDeleteCourse = async () => {
         if (!user || !courseToDelete) return;
         try {
             await deleteDoc(doc(db, 'users', user.uid, 'courses', courseToDelete));
-            setCourseToDelete(null); // Ferme la modale
+            setCourseToDelete(null);
         } catch (error) {
             console.error("Erreur suppression", error);
             setAlertInfo({ title: "Erreur", message: "Impossible de supprimer ce cours.", type: 'error' });
@@ -433,7 +439,7 @@ export default function Home() {
         );
     }
 
-    // 4. Modale Profil
+    // 4. Modale Profil (SEULEMENT POUR L'ONBOARDING INITIAL)
     if (showProfileModal) {
         return (
             <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
@@ -447,6 +453,7 @@ export default function Home() {
                     </div>
 
                     <form onSubmit={handleSaveProfile} className="p-6 space-y-4">
+                        {/* Formulaire identique à celui de l'onglet, mais en mode modale */}
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Prénom</label>
@@ -477,8 +484,8 @@ export default function Home() {
                                 </div>
                             </div>
                         </div>
-                        <button type="submit" disabled={loadingProfile} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl mt-4 flex justify-center">
-                            {loadingProfile ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Valider mon profil'}
+                        <button type="submit" disabled={isSaving} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl mt-4 flex justify-center">
+                            {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Commencer l\'aventure'}
                         </button>
                     </form>
                 </div>
@@ -514,7 +521,14 @@ export default function Home() {
                                 <span className={`text-xs font-bold ${userProfile.currentSemester === 'S2' ? 'text-indigo-600' : 'text-slate-400'}`}>S2</span>
                             </button>
                         )}
-                        <button onClick={() => setShowProfileModal(true)} className="w-9 h-9 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-indigo-50 hover:text-indigo-600"><User className="w-5 h-5" /></button>
+
+                        {/* L'icône de profil ouvre maintenant l'onglet 'profile' au lieu de la modale */}
+                        <button
+                            onClick={() => setActiveTab('profile')}
+                            className={`w-9 h-9 rounded-full border flex items-center justify-center transition-colors ${activeTab === 'profile' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-100 border-slate-200 text-slate-500 hover:bg-indigo-50 hover:text-indigo-600'}`}
+                        >
+                            <User className="w-5 h-5" />
+                        </button>
                         <button onClick={handleLogout} className="text-slate-400 hover:text-rose-600 transition-colors" title="Déconnexion"><LogOut className="w-5 h-5" /></button>
                     </div>
                 </div>
@@ -524,17 +538,93 @@ export default function Home() {
             <main className="max-w-[95%] mx-auto px-4 py-6">
                 <div className="mb-6 animate-fade-in flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold text-slate-800">Bonjour, {userProfile?.firstName} 👋</h1>
-                        <p className="text-slate-500 text-sm">Programme pour le <span className="font-semibold text-indigo-600">{userProfile?.currentSemester}</span>.</p>
+                        <h1 className="text-2xl font-bold text-slate-800">
+                            {activeTab === 'profile' ? 'Mon Profil' : `Bonjour, ${userProfile?.firstName} 👋`}
+                        </h1>
+                        <p className="text-slate-500 text-sm">
+                            {activeTab === 'profile' ? 'Gérez vos informations personnelles et préférences.' : `Programme pour le ${userProfile?.currentSemester}.`}
+                        </p>
                     </div>
                 </div>
 
-                {/* TABS */}
-                <div className="flex gap-2 mb-8 bg-white p-1.5 rounded-2xl shadow-sm border border-slate-200 max-w-md mx-auto">
-                    <button onClick={() => setActiveTab('planning')} className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold rounded-xl transition-all ${activeTab === 'planning' ? 'bg-indigo-50 text-indigo-700 shadow-sm' : 'text-slate-500 hover:bg-slate-50'}`}><CalendarDays className="w-4 h-4" />Planning</button>
-                    <button onClick={() => setActiveTab('all')} className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold rounded-xl transition-all ${activeTab === 'all' ? 'bg-indigo-50 text-indigo-700 shadow-sm' : 'text-slate-500 hover:bg-slate-50'}`}><BookOpen className="w-4 h-4" />Cours</button>
-                    <button onClick={() => setActiveTab('add')} className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold rounded-xl transition-all ${activeTab === 'add' ? 'bg-indigo-50 text-indigo-700 shadow-sm' : 'text-slate-500 hover:bg-slate-50'}`}><Plus className="w-4 h-4" />Ajouter</button>
-                </div>
+                {/* TABS (Cachés si on est sur le profil pour éviter la surcharge, ou on peut les garder) */}
+                {activeTab !== 'profile' && (
+                    <div className="flex gap-2 mb-8 bg-white p-1.5 rounded-2xl shadow-sm border border-slate-200 max-w-md mx-auto">
+                        <button onClick={() => setActiveTab('planning')} className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold rounded-xl transition-all ${activeTab === 'planning' ? 'bg-indigo-50 text-indigo-700 shadow-sm' : 'text-slate-500 hover:bg-slate-50'}`}><CalendarDays className="w-4 h-4" />Planning</button>
+                        <button onClick={() => setActiveTab('all')} className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold rounded-xl transition-all ${activeTab === 'all' ? 'bg-indigo-50 text-indigo-700 shadow-sm' : 'text-slate-500 hover:bg-slate-50'}`}><BookOpen className="w-4 h-4" />Cours</button>
+                        <button onClick={() => setActiveTab('add')} className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold rounded-xl transition-all ${activeTab === 'add' ? 'bg-indigo-50 text-indigo-700 shadow-sm' : 'text-slate-500 hover:bg-slate-50'}`}><Plus className="w-4 h-4" />Ajouter</button>
+                    </div>
+                )}
+
+                {/* --- VUE: PROFIL (NOUVEAU) --- */}
+                {activeTab === 'profile' && (
+                    <div className="max-w-2xl mx-auto animate-slide-up-fade">
+                        {/* Bouton retour aux onglets principaux */}
+                        <button
+                            onClick={() => setActiveTab('planning')}
+                            className="mb-6 flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-indigo-600 transition-colors"
+                        >
+                            <ChevronLeft className="w-4 h-4" />
+                            Retour au planning
+                        </button>
+
+                        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                            <div className="bg-slate-50 p-6 border-b border-slate-100 flex items-center gap-4">
+                                <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center">
+                                    <GraduationCap className="w-8 h-8 text-indigo-600" />
+                                </div>
+                                <div>
+                                    <h2 className="text-xl font-bold text-slate-800">Mes Préférences</h2>
+                                    <p className="text-slate-500 text-sm">Modifiez vos informations universitaires.</p>
+                                </div>
+                            </div>
+
+                            <form onSubmit={handleSaveProfile} className="p-8 space-y-6">
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div>
+                                        <label className="block text-sm font-bold text-slate-600 mb-2">Prénom</label>
+                                        <input type="text" required className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 outline-none transition-all focus:ring-2 focus:ring-indigo-100" value={tempProfile.firstName} onChange={(e) => setTempProfile({...tempProfile, firstName: e.target.value})} />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-bold text-slate-600 mb-2">Nom</label>
+                                        <input type="text" required className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 outline-none transition-all focus:ring-2 focus:ring-indigo-100" value={tempProfile.lastName} onChange={(e) => setTempProfile({...tempProfile, lastName: e.target.value})} />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-600 mb-2 flex items-center gap-2"><School className="w-4 h-4" /> Université</label>
+                                    <input type="text" required list="university-suggestions" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 outline-none transition-all focus:ring-2 focus:ring-indigo-100" value={tempProfile.university} onChange={(e) => setTempProfile({...tempProfile, university: e.target.value})} />
+                                    <datalist id="university-suggestions">{UNIVERSITY_SUGGESTIONS.map((uni) => (<option key={uni} value={uni} />))}</datalist>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div>
+                                        <label className="block text-sm font-bold text-slate-600 mb-2">Cursus</label>
+                                        <div className="relative">
+                                            <select className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 outline-none appearance-none bg-white transition-all focus:ring-2 focus:ring-indigo-100" value={tempProfile.courseType} onChange={(e) => setTempProfile({...tempProfile, courseType: e.target.value as CourseType})}>
+                                                <option value="PASS">PASS</option><option value="LAS">LAS</option><option value="PACES">PACES</option><option value="Autre">Autre</option>
+                                            </select>
+                                            <ChevronDown className="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-bold text-slate-600 mb-2">Semestre Actuel</label>
+                                        <div className="flex gap-3">
+                                            <button type="button" onClick={() => setTempProfile({...tempProfile, currentSemester: 'S1'})} className={`flex-1 py-3 rounded-xl text-sm font-bold border transition-all ${tempProfile.currentSemester === 'S1' ? 'bg-indigo-600 text-white border-indigo-600 shadow-md shadow-indigo-200' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'}`}>S1</button>
+                                            <button type="button" onClick={() => setTempProfile({...tempProfile, currentSemester: 'S2'})} className={`flex-1 py-3 rounded-xl text-sm font-bold border transition-all ${tempProfile.currentSemester === 'S2' ? 'bg-indigo-600 text-white border-indigo-600 shadow-md shadow-indigo-200' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'}`}>S2</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="pt-4 border-t border-slate-100 flex justify-end">
+                                    <button type="submit" disabled={isSaving} className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-xl transition-all active:scale-95 flex items-center gap-2 shadow-lg shadow-indigo-200 disabled:opacity-70 disabled:cursor-not-allowed">
+                                        {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Save className="w-5 h-5" /> Enregistrer</>}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
 
                 {/* VUE: AJOUTER */}
                 {activeTab === 'add' && (

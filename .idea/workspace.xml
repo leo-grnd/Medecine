@@ -4,9 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c693e493-3c04-49ac-8316-706d1fe43317" name="Changes" comment="Enhance layout styling and components: adjust max-width for responsive design, improve sticky headers with backdrop blur, refine timeline layout with grid for larger screens, and optimize &quot;Today&quot; task styling.">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/globals.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/globals.css" afterDir="false" />
+    <list default="true" id="c693e493-3c04-49ac-8316-706d1fe43317" name="Changes" comment="Introduce enhanced UX modals for error handling and course deletion confirmation. Add animations for smoother transitions, refine state management for modals, and improve visual styling.">
       <change beforePath="$PROJECT_DIR$/src/app/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/page.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -112,7 +110,7 @@
       <workItem from="1767526143981" duration="2636000" />
       <workItem from="1767529094402" duration="24000" />
       <workItem from="1767529126353" duration="1437000" />
-      <workItem from="1767535044303" duration="2040000" />
+      <workItem from="1767535044303" duration="2357000" />
     </task>
     <task id="LOCAL-00004" summary="Integrate Firebase for authentication and Firestore database. Added user authentication with Google, profile management syncing with Firestore, and real-time course updates. Enhanced UX with loading states and error handling.">
       <option name="closed" value="true" />
@@ -162,7 +160,15 @@
       <option name="project" value="LOCAL" />
       <updated>1767537291015</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="Introduce enhanced UX modals for error handling and course deletion confirmation. Add animations for smoother transitions, refine state management for modals, and improve visual styling.">
+      <option name="closed" value="true" />
+      <created>1767537931265</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1767537931265</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -192,6 +198,7 @@
     <MESSAGE value="Update branding: rename `J-Master.Med` to `Med&amp;J` in UI components." />
     <MESSAGE value="Add date navigation and dynamic week labels for the planning view. Enhanced timeline logic with utility functions for week calculations and improved handling of &quot;Today&quot; and &quot;Tomorrow&quot; labels. Introduced navigation controls for previous/next week and reset to the current week." />
     <MESSAGE value="Enhance layout styling and components: adjust max-width for responsive design, improve sticky headers with backdrop blur, refine timeline layout with grid for larger screens, and optimize &quot;Today&quot; task styling." />
-    <option name="LAST_COMMIT_MESSAGE" value="Enhance layout styling and components: adjust max-width for responsive design, improve sticky headers with backdrop blur, refine timeline layout with grid for larger screens, and optimize &quot;Today&quot; task styling." />
+    <MESSAGE value="Introduce enhanced UX modals for error handling and course deletion confirmation. Add animations for smoother transitions, refine state management for modals, and improve visual styling." />
+    <option name="LAST_COMMIT_MESSAGE" value="Introduce enhanced UX modals for error handling and course deletion confirmation. Add animations for smoother transitions, refine state management for modals, and improve visual styling." />
   </component>
 </project>
