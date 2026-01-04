@@ -181,9 +181,10 @@ export default function Home() {
         '--theme-700': themeColors[700],
         '--theme-900': themeColors[900],
         backgroundImage: activeWallpaperUrl ? `url(${activeWallpaperUrl})` : 'none',
-        backgroundSize: 'cover',
+        backgroundSize: 'cover', // Remplissage standard sans ajustement complexe
         backgroundPosition: 'center',
-        backgroundAttachment: 'fixed',
+        backgroundRepeat: 'no-repeat',
+        // Retrait de backgroundAttachment: fixed pour éviter les effets de zoom indésirables sur mobile
     } as React.CSSProperties;
 
     // Fonction pour obtenir une couleur unique par cours
@@ -533,6 +534,7 @@ export default function Home() {
                                 <input type="text" required className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-[var(--theme-500)] outline-none" value={tempProfile.lastName} onChange={(e) => setTempProfile({...tempProfile, lastName: e.target.value})} />
                             </div>
                         </div>
+                        {/* ... Reste du formulaire simplifié ... */}
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Cursus</label>
@@ -623,7 +625,7 @@ export default function Home() {
                     </div>
                 )}
 
-                {/* --- VUE: PROFIL --- */}
+                {/* --- VUE: PROFIL (AVEC THEMES & WALLPAPERS) --- */}
                 {activeTab === 'profile' && (
                     <div className="max-w-2xl mx-auto animate-slide-up-fade">
                         <button
@@ -690,7 +692,7 @@ export default function Home() {
                                         `}
                                             >
                                                 {wp.url ? (
-                                                    <img src={wp.url} alt={wp.name} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
+                                                    <img src={wp.url} alt={wp.name} className="w-full h-full object-cover" />
                                                 ) : (
                                                     <div className="w-full h-full bg-slate-100 flex items-center justify-center text-slate-400 text-xs font-medium">Aucun</div>
                                                 )}
