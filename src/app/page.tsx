@@ -495,9 +495,9 @@ export default function Home() {
 
     // 5. App Principale
     return (
-        <div className="min-h-screen bg-slate-50 text-slate-800 font-sans selection:bg-indigo-100 pb-24 relative">
+        <div className="h-screen w-screen overflow-hidden bg-slate-50 text-slate-800 font-sans selection:bg-indigo-100 relative flex flex-col">
             {/* HEADER */}
-            <header className="bg-white border-b border-slate-200 sticky top-0 z-20 shadow-sm/50 backdrop-blur-md bg-white/90">
+            <header className="bg-white border-b border-slate-200 z-20 shadow-sm/50 backdrop-blur-md bg-white/90 flex-none">
                 <div className="max-w-[95%] mx-auto px-4 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <div className="bg-indigo-600 p-2 rounded-lg shadow-sm">
@@ -535,7 +535,7 @@ export default function Home() {
             </header>
 
             {/* CONTENU */}
-            <main className="max-w-[95%] mx-auto px-4 py-6">
+            <main className="flex-1 overflow-y-auto scrollbar-hide max-w-[95%] w-full mx-auto px-4 py-6 pb-24">
                 <div className="mb-6 animate-fade-in flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-bold text-slate-800">
@@ -648,7 +648,7 @@ export default function Home() {
                     <div className="space-y-6 animate-slide-up-fade">
 
                         {/* Contrôles de navigation */}
-                        <div className="flex items-center justify-between bg-white p-2 rounded-2xl shadow-sm border border-slate-200 mb-4 sticky top-16 z-10 backdrop-blur-sm bg-white/90">
+                        <div className="flex items-center justify-between bg-white p-2 rounded-2xl shadow-sm border border-slate-200 mb-4 sticky top-0 z-10 backdrop-blur-sm bg-white/90">
                             <button
                                 onClick={handlePrevWeek}
                                 className="p-3 rounded-xl hover:bg-slate-100 text-slate-600 transition-colors"
