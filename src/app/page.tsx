@@ -678,7 +678,7 @@ export default function Home() {
                                                 key={wp.id}
                                                 onClick={() => setTempProfile({ ...tempProfile, wallpaper: wp.url })}
                                                 className={`
-                                            relative h-24 rounded-xl cursor-pointer overflow-hidden border-2 transition-all group
+                                            relative h-24 rounded-t-xl cursor-pointer overflow-hidden border-2 transition-all group
                                             ${(tempProfile.wallpaper === wp.url || (!tempProfile.wallpaper && wp.id === 'none'))
                                                     ? 'border-[var(--theme-600)] ring-2 ring-[var(--theme-200)]'
                                                     : 'border-transparent hover:border-slate-300'}

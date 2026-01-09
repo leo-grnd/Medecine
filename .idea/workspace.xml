@@ -4,8 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c693e493-3c04-49ac-8316-706d1fe43317" name="Changes" comment="Refine wallpaper handling and profile view comments: adjust background styles for better mobile behavior, update image scaling, and clarify section labels.">
-      <change beforePath="$PROJECT_DIR$/src/app/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/page.tsx" afterDir="false" />
+    <list default="true" id="c693e493-3c04-49ac-8316-706d1fe43317" name="Changes" comment="Simplify tab visibility logic: remove &quot;assistant&quot; exclusion condition, refine comments, and enhance styling consistency for the &quot;Assistant&quot; tab.">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -112,6 +112,9 @@
       <workItem from="1767529126353" duration="1437000" />
       <workItem from="1767535044303" duration="6149000" />
       <workItem from="1767543760470" duration="571000" />
+      <workItem from="1767644500561" duration="2655000" />
+      <workItem from="1767731210407" duration="1744000" />
+      <workItem from="1767993489229" duration="348000" />
     </task>
     <task id="LOCAL-00004" summary="Integrate Firebase for authentication and Firestore database. Added user authentication with Google, profile management syncing with Firestore, and real-time course updates. Enhanced UX with loading states and error handling.">
       <option name="closed" value="true" />
